@@ -22,6 +22,8 @@ def test_get_event_valid_e001():
     assert validated.inundation.flood_probability == 0.87
     assert validated.data_source == "PRECOMPUTED_REPLAY"
     assert "ALERT" in validated.actions
+    assert validated.timeline is not None
+    assert len(validated.timeline) >= 4
 
 
 def test_get_event_not_found():

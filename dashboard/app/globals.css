@@ -2,47 +2,87 @@
 @import "leaflet/dist/leaflet.css";
 
 /* ==========================================================================
-   DESIGN TOKENS - HYDROSURGE AI EMERGENCY COMMAND SYSTEM
-   Register: Calm Authority Under Pressure
-   ==========================================================================
-   Color Palette (OKLCH / Intentional Command Palette):
-   - Command Background:  #070b14 (Deep dark slate, not harsh #000)
-   - Panel Surface:       #0e1626 (Subdued command-center navy)
-   - Card Elevated:       #141e33 (Higher elevation surface)
-   - Border Structural:   #1e2d4a (Minimal structural division)
-   - Text Primary:        #f1f5f9 (Calm near-white)
-   - Text Muted:          #94a3b8 (De-emphasized labels)
-   - Single Saturated:    #e11d48 (Rose-600 / Crimson - Urgent Alert Only)
+   COMMAND CENTER DESIGN TOKENS - HYDROSURGE AI
+   Strict OKLCH Palette (Non-negotiable)
    ========================================================================== */
-
 :root {
-  --background: #070b14;
-  --foreground: #f1f5f9;
+  --canvas: oklch(14% 0.01 230);
+  --card: oklch(18% 0.015 230);
+  --card-elevated: oklch(21% 0.02 230);
+  --card-hover: oklch(23% 0.022 230);
+  --critical: oklch(62% 0.22 25);
+  --critical-bg: oklch(20% 0.05 25);
+  --critical-border: oklch(40% 0.12 25);
+  --warning: oklch(69% 0.19 50);
+  --warning-bg: oklch(22% 0.05 50);
+  --warning-border: oklch(45% 0.10 50);
+  --safe: oklch(68% 0.16 142);
+  --safe-bg: oklch(20% 0.04 142);
+  --safe-border: oklch(42% 0.08 142);
+  --text-primary: oklch(96% 0.01 230);
+  --text-secondary: oklch(74% 0.02 230);
+  --text-muted: oklch(60% 0.02 230);
+  --border: oklch(22% 0.015 230);
+  --accent-cyan: oklch(72% 0.12 215);
+
+  --background: var(--canvas);
+  --foreground: var(--text-primary);
 }
 
 body {
-  background: #070b14;
-  color: #f1f5f9;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--canvas);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-/* Ensure Leaflet tiles blend smoothly with dark theme */
+/* Monospace font class for technical telemetry readouts */
+.font-telemetry {
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Interactive focus accessibility outline */
+button:focus-visible, input:focus-visible, a:focus-visible {
+  outline: 2px solid var(--critical);
+  outline-offset: 2px;
+}
+
+/* Leaflet Container styling for dark command center */
 .leaflet-container {
-  background: #070b14 !important;
+  background: var(--canvas) !important;
   font-family: inherit;
 }
 
 .leaflet-tile {
-  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  filter: brightness(0.60) invert(1) contrast(3) hue-rotate(200deg) saturate(0.25) brightness(0.72);
 }
 
 .leaflet-popup-content-wrapper {
-  background: #0e1626 !important;
-  color: #f1f5f9 !important;
-  border: 1px solid #1e2d4a !important;
-  border-radius: 8px !important;
+  background: var(--card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
 }
 
 .leaflet-popup-tip {
-  background: #0e1626 !important;
+  background: var(--card) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

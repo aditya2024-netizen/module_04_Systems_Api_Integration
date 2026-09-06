@@ -118,6 +118,7 @@ class MockForecastProvider(ForecastProvider, RiskProvider):
                     "actions": ev["actions"],
                     "data_source": "PRECOMPUTED_REPLAY",
                     "status": "PROTOTYPE",
+                    "timeline": ev.get("timeline", []),
                 }
 
         raise ValueError(f"Event not found for event_id={event_id}")

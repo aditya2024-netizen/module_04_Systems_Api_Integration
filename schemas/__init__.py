@@ -4,7 +4,7 @@ Schemas module exports.
 from schemas.rainfall import RainfallOutput
 from schemas.inundation import InundationOutput
 from schemas.risk import RiskTile
-from schemas.decision import DecisionObject, Location, Impact
+from schemas.decision import DecisionObject, Location, Impact, TimelineStep
 
 __all__ = [
     "RainfallOutput",
@@ -13,4 +13,5 @@ __all__ = [
     "DecisionObject",
     "Location",
     "Impact",
+    "TimelineStep",
 ]

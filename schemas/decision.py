@@ -3,7 +3,7 @@ Decision Schema - Pydantic v2
 Contract specification for joined Decision Object returned by /api/v1/event/{id}.
 Status: PROTOTYPE 🟡
 """
-from typing import List, Literal
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 from schemas.rainfall import RainfallOutput
 from schemas.inundation import InundationOutput
@@ -11,12 +11,22 @@ from schemas.inundation import InundationOutput
 
 class Location(BaseModel):
     zone_id: str = Field(..., description="Target zone identifier")
+    city: Optional[str] = Field("Chennai", description="City location identifier")
 
 
 class Impact(BaseModel):
     population_exposed: int = Field(..., description="Estimated population in affected area")
     critical_assets: int = Field(..., description="Number of critical infrastructure assets exposed")
     roads_affected: int = Field(..., description="Number of major road segments impacted")
+
+
+class TimelineStep(BaseModel):
+    timestamp: str = Field(..., description="Timestamp in ISO 8601 format")
+    lead_minutes: int = Field(..., description="Forecast lead minutes from baseline")
+    rainfall_mm_hr: float = Field(..., description="Rainfall intensity in mm/hr")
+    rainfall_accumulation_mm: float = Field(..., description="Rainfall accumulation in mm")
+    flood_probability: float = Field(..., description="Flood probability [0-1]")
+    depth_band: str = Field(..., description="Depth band e.g. 0.5-1.0m")
 
 
 class DecisionObject(BaseModel):
@@ -33,4 +43,7 @@ class DecisionObject(BaseModel):
     )
     status: Literal["VERIFIED", "PROTOTYPE", "ARCHITECTURE", "CONCEPT"] = Field(
         "PROTOTYPE", description="Capability verification status tag"
+    )
+    timeline: Optional[List[TimelineStep]] = Field(
+        default=None, description="Time-series progression steps"
     )
