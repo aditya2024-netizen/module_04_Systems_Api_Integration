@@ -1,211 +1,67 @@
-# HydroSurge AI — Module 4: Systems & API Integration Layer
-**SIH Problem Statement 26071**  
-*Unified contract-driven service connecting Rainfall Forecast, Flood Inundation, Spatial Risk, and Emergency Decision Engines.*
+# HydroSurge AI — Module 4 FastAPI Gateway Backend
+
+The HydroSurge Module 4 API Gateway is the central architectural bridge connecting quantitative rainfall forecasting, 2D hydrodynamic inundation modeling, spatial GIS metadata, and emergency decision support dashboards.
 
 ---
 
-## 1. Architectural Principles
+## 1. Directory Structure
 
-1. **Frontend Single Source of Truth**: The React/Next.js dashboard consumes all domain data exclusively via the versioned FastAPI contract (`/api/v1/*`). The dashboard contains no local scenario datasets, no hardcoded coordinates, and no direct filesystem reads.
-2. **Deterministic Replay Backbone**: In mock mode, the API gateway is backed by `demo/replay/scenario.json`, serving deterministic, contract-compliant responses as a fail-safe.
-3. **Provider Abstraction**: MOD_1 (Rainfall ML) and MOD_2 (Inundation ML) plug directly into Python provider adapters (`providers/rainfall.py`, `providers/inundation.py`) without requiring any changes to the frontend.
-4. **Honest Provenance Model**: Explicit source tracking ensures mixed provider states are honestly labeled `MIXED / PROTOTYPE 🟡`. `VERIFIED 🟢` is restricted to fully validated live outputs.
-
----
-
-## 2. Quick Start Commands
-
-### Backend Service (FastAPI)
-```bash
-pip install -r requirements.txt
-python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-Interactive API documentation will be available at:
-- Swagger UI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- ReDoc: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+api/
+├── main.py              # FastAPI application entrypoint, CORS configuration, route inclusion
+├── dependencies.py      # Dependency injection: provider resolver and scenario cache
+└── routes/
+    ├── health.py        # /api/v1/health subsystem diagnostics
+    ├── event.py         # /api/v1/events and /api/v1/event/{id}
+    ├── rainfall.py      # /api/v1/rainfall nowcasting query
+    ├── inundation.py    # /api/v1/inundation flood depth query
+    └── risk.py          # /api/v1/risk spatial grid query
 
-### Running Automated Test Suite
-```bash
+schemas/
+├── __init__.py          # Exported Pydantic v2 schemas
+├── rainfall.py          # RainfallOutput contract
+├── inundation.py        # InundationOutput contract
+├── risk.py              # RiskTile spatial schema
+└── decision.py          # DecisionObject, Location, ResponseRoute, EventSummary
+
+providers/
+├── base.py              # BaseProvider abstract interface
+├── mock.py              # Deterministic replay provider (scenario.json)
+├── rainfall.py          # R&D-1 Rainfall ML engine adapter stub
+├── inundation.py        # R&D-2 Inundation hydrodynamic solver stub
+└── live.py              # Combined live inference provider
+```
+
+---
+
+## 2. Pydantic v2 Validation Bounds
+
+All numeric telemetry fields enforce physical bounds using Pydantic v2 `Field` constraints:
+- `rainfall_mm_hr`: `ge=0.0` (Precipitation rate cannot be negative)
+- `rainfall_accumulation_mm`: `ge=0.0`
+- `confidence`: `ge=0.0, le=1.0` (Unitless confidence interval)
+- `flood_probability`: `ge=0.0, le=1.0`
+- `latitude`: `ge=-90.0, le=90.0`
+- `longitude`: `ge=-180.0, le=180.0`
+- `population_exposed`: `ge=0`
+- `depth_band`: Enum: `<0.1m`, `0.1-0.3m`, `0.3-0.5m`, `0.5-1.0m`, `>1.0m`
+
+---
+
+## 3. Running the Backend
+
+### Local Development:
+```powershell
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Production:
+```powershell
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+### Automated Pytest Suite:
+```powershell
 pytest -v
 ```
-
-### Dashboard (Next.js)
-```bash
-cd dashboard
-npm ci
-npm run dev -- -p 3000
-```
-- Dashboard UI: [http://127.0.0.1:3000](http://127.0.0.1:3000)
-
----
-
-## 3. API Endpoints Contract
-
-The API exposes the following contract-compliant endpoints under `/api/v1`:
-
-### 1. `GET /api/v1/health`
-Checks service health, reports active provider mode, and last successful fetch per provider.
-
-**Sample Response (200 OK):**
-```json
-{
-  "status": "healthy",
-  "provider_mode": "mock",
-  "providers": {
-    "mock": {
-      "status": "active",
-      "last_successful_fetch": "2026-09-06T09:00:00Z"
-    },
-    "rainfall_model": {
-      "status": "standby (ARCHITECTURE)",
-      "last_successful_fetch": null
-    },
-    "inundation_model": {
-      "status": "standby (ARCHITECTURE)",
-      "last_successful_fetch": null
-    }
-  },
-  "timestamp": "2026-09-06T09:00:00Z"
-}
-```
-
----
-
-### 2. `GET /api/v1/events` (and `GET /api/v1/event`)
-Returns list of all available event summaries for navigation and selector controls.
-
-**Sample Response (200 OK):**
-```json
-[
-  {
-    "event_id": "E001",
-    "zone_id": "Z42",
-    "zone_name": "Velachery South",
-    "priority": "CRITICAL"
-  },
-  {
-    "event_id": "E002",
-    "zone_id": "Z18",
-    "zone_name": "Saidapet Adyar",
-    "priority": "HIGH"
-  }
-]
-```
-
----
-
-### 3. `GET /api/v1/event/{id}`
-Authoritative single source of truth for an emergency incident. Combines nowcast rainfall, inundation depth bands, population impact, actions, timeline progression, and response routing.
-
-**Query Parameters:**
-- `simulate_radar_outage` (`bool`, default: `false`): Simulates Doppler radar failure and triggers degraded satellite/gauge fallback with adjusted confidence.
-
-**Sample Request:**
-```bash
-curl -X GET "http://127.0.0.1:8000/api/v1/event/E001"
-```
-
-**Sample Response (200 OK):**
-```json
-{
-  "event_id": "E001",
-  "location": {
-    "zone_id": "Z42",
-    "city": "Chennai",
-    "zone_name": "Velachery South",
-    "latitude": 12.9815,
-    "longitude": 80.218,
-    "flood_area_type": "Depression Bowl"
-  },
-  "rainfall": {
-    "event_id": "E001",
-    "zone_id": "Z42",
-    "valid_time": "2026-09-06T09:00:00Z",
-    "lead_minutes": 60,
-    "rainfall_mm_hr": 87.0,
-    "rainfall_accumulation_mm": 124.0,
-    "confidence": 0.84,
-    "prediction_uri": "mock://rainfall/E001",
-    "source": "mock",
-    "status": "PROTOTYPE"
-  },
-  "inundation": {
-    "event_id": "E001",
-    "zone_id": "Z42",
-    "flood_probability": 0.87,
-    "depth_band": "0.5-1.0m",
-    "risk_uri": "mock://inundation/E001",
-    "confidence": 0.81,
-    "valid_time": "2026-09-06T09:00:00Z",
-    "source": "mock",
-    "status": "PROTOTYPE"
-  },
-  "confidence": 0.81,
-  "impact": {
-    "population_exposed": 21400,
-    "critical_assets": 3,
-    "roads_affected": 2
-  },
-  "priority": "CRITICAL",
-  "actions": [
-    "ALERT",
-    "CLOSE_ROAD",
-    "DEPLOY_TEAM"
-  ],
-  "data_source": "PRECOMPUTED_REPLAY",
-  "status": "PROTOTYPE",
-  "timeline": [
-    {
-      "timestamp": "2026-09-06T07:00:00Z",
-      "lead_minutes": 0,
-      "rainfall_mm_hr": 25.0,
-      "rainfall_accumulation_mm": 25.0,
-      "flood_probability": 0.2,
-      "depth_band": "<0.1m",
-      "step_label": "T+00"
-    }
-  ],
-  "response_route": {
-    "incident_id": "INC-01",
-    "title": "Critical Ward 42 Rescue & Evacuation",
-    "lead_time": "T-20 min",
-    "risk_score": 0.92,
-    "impassable_road": "Velachery Main Road (Near Lake)",
-    "safe_route": "Inner Ring Road -> OMR Elevated Bypass",
-    "route_coordinates": [[12.9815, 80.218], [12.99, 80.23], [13.005, 80.245], [13.015, 80.255]],
-    "blocked_coordinates": [[12.978, 80.215], [12.983, 80.221]],
-    "milestones": [
-      {
-        "time": "T-20 min",
-        "label": "Velachery low-lying segments become impassable"
-      }
-    ]
-  },
-  "radar_outage": false,
-  "fallback_mode": false,
-  "fallback_source": null
-}
-```
-
----
-
-### 4. `GET /api/v1/rainfall`
-Fetches nowcast rainfall forecast by `event_id` or `zone_id`.
-
----
-
-### 5. `GET /api/v1/inundation`
-Fetches flood inundation probability and depth band by `event_id` or `zone_id`.
-
----
-
-### 6. `GET /api/v1/risk`
-Fetches spatial risk tiles combining rainfall and flood probability with geographic centroids for map rendering.
-
----
-
-## 4. Cross-Module Handoff Documentation
-
-- **Contract Specification**: See [INTEGRATION_CONTRACT.md](INTEGRATION_CONTRACT.md) for field-by-field definitions, bounds, and fallback rules.
-- **Team Integration Guide**: See [TEAM_INTEGRATION.md](TEAM_INTEGRATION.md) for exact steps to plug in MOD_1, MOD_2, and MOD_3 models.
-- **Readiness Audit**: See [INTEGRATION_READY.md](INTEGRATION_READY.md) for the full test verification and hardening report.
+All 27 contract, routing, failover, and architecture tests will execute and validate against the running contracts.

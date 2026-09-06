@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# HydroSurge AI — Incident Decision Support Dashboard
 
-## Getting Started
+Emergency flood operations command dashboard for Greater Chennai Corporation (GCC) and the Adyar Basin.
 
-First, run the development server:
+Built with **Next.js 16 (App Router)** and **React 19**, styled with Tailwind CSS in a high-contrast dark command-center aesthetic.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 1. Architectural Invariant: 100% API Driven
+
+> **THE DASHBOARD CONTAINS ZERO LOCAL SCENARIO DATA OR MOCK FALLBACKS.**  
+> The frontend client communicates exclusively with the FastAPI backend (`http://127.0.0.1:8000/api/v1`).
+> Direct imports of `fallback.js`, CSV files, notebooks, or GeoTIFF rasters are strictly prohibited.
+
+---
+
+## 2. Component to API Mapping
+
+| Component | Target File | API Endpoint | Data Consumed | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **Page Root** | `app/page.js` | `/events`, `/event/{id}`, `/risk` | Master state | Coordinates initial load, event switching, and active mode |
+| **Status Strip** | `app/components/StatusStrip.jsx` | `/health`, `/event/{id}` | `provider_mode`, latency, provenance | Displays real-time API connectivity and latency benchmarks |
+| **Zone Map** | `app/components/ZoneMap.jsx` | `/risk`, `/event/{id}` | Coordinates, depth, response route | Leaflet GIS interactive map rendering Chennai catchment markers |
+| **Timeline Bar** | `app/components/TimelineBar.jsx` | `/event/{id}` | `timeline` (+0m to +120m) | Interactive forecast scrub bar |
+| **Hazard Mode** | `app/components/HazardMode.jsx` | `/event/{id}` | `rainfall`, `inundation`, radar outage | Precipitation rates, flood depths, and radar outage controls |
+| **Impact Mode** | `app/components/ImpactMode.jsx` | `/event/{id}` | `impact`, `location` | Demographic vulnerability and interactive What-If scenario simulator |
+| **Response Mode**| `app/components/ResponseMode.jsx`| `/event/{id}` | `response_route`, `actions` | Time-to-impact clock, impassable roads, and safe evacuation corridors |
+| **CAP Drawer** | `app/components/CapDrawer.jsx` | `/event/{id}` | All decision fields | Generates OASIS CAP v1.2 / SACHET disaster warning XML payload |
+
+---
+
+## 3. Forbidden Frontend Data Sources
+
+The following static and duplicate assets were permanently purged:
+- `dashboard/app/data/fallback.js`: **REMOVED**
+- `FALLBACK_PAYLOADS`: **REMOVED**
+- `SAMPLE_EVENTS`: **REMOVED**
+- `ZONE_COORDINATES`: **REMOVED**
+
+A repository-wide static architecture scan (`tests/test_integration_hardening.py::test_frontend_static_architecture_scan`) verifies that zero prohibited tokens exist in the frontend codebase.
+
+---
+
+## 4. Next.js 16 Turbopack Configuration
+
+In `next.config.mjs`, `allowedDevOrigins` is configured to prevent HMR cross-origin blocking:
+```javascript
+const nextConfig = {
+  allowedDevOrigins: [
+    "127.0.0.1",
+    "localhost",
+    "127.0.0.1:3000",
+    "localhost:3000",
+  ],
+};
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 5. Running the Dashboard
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+# Development server (Port 3000)
+npm run dev
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Optimized Production Build
+npm run build
+npm start
+```

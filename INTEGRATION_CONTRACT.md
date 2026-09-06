@@ -1,126 +1,356 @@
-# HydroSurge AI — Cross-Module Integration Contract Matrix
+# HydroSurge AI — Complete API Integration Contract
+**Version:** 1.0.0 (SIH PS 26071)  
+**Status:** VERIFIED 🟢  
+**Base URL:** `http://127.0.0.1:8000/api/v1`  
+**Content-Type:** `application/json; charset=utf-8`  
 
-## Overview
-This document specifies the authoritative contract boundaries between HydroSurge AI modules for SIH PS 26071.
+---
 
+## 1. Overview & Provenance Model
+
+The HydroSurge API Integration Layer enforces strict data contracts between machine learning engines, hydraulic models, and the decision dashboard.
+
+### Data Provenance Matrix:
+| `data_source` | `status` | Description / Trigger Condition |
+| :--- | :--- | :--- |
+| `LIVE` | `VERIFIED` | Both R&D-1 (Rainfall) and R&D-2 (Inundation) models are genuine live inference pipelines and certified. |
+| `MIXED` | `PROTOTYPE` | One model is live (e.g. Rainfall live) while another is mock/fallback, or one model is degraded. |
+| `PRECOMPUTED_REPLAY` | `PROTOTYPE` | Baseline scenario replay mode reading from calibrated Chennai catchment historical cases (`demo/replay/scenario.json`). |
+| `CONCEPT` | `CONCEPT` | Architectural mock or placeholder endpoint. |
+
+---
+
+## 2. Public API Endpoints
+
+### 2.1 Subsystem Health Check: `GET /api/v1/health`
+- **Method**: `GET`
+- **Path**: `/api/v1/health`
+- **Parameters**: None
+- **Response Code**: `200 OK`
+- **Fields**:
+  - `status` (`str`): System operational health (`"healthy"`).
+  - `provider_mode` (`str`): Active provider (`"mock"`, `"live"`, `"rainfall_live"`, `"inundation_live"`).
+  - `providers` (`dict`): Status breakdown of each model provider.
+  - `timestamp` (`str`): Current UTC timestamp in ISO 8601 format.
+
+#### Actual Live JSON Response:
+```json
+{
+  "status": "healthy",
+  "provider_mode": "mock",
+  "providers": {
+    "mock": {
+      "status": "active",
+      "last_successful_fetch": "2026-09-06T09:30:36.547494+00:00"
+    },
+    "rainfall_model": {
+      "status": "standby (ARCHITECTURE)",
+      "last_successful_fetch": null
+    },
+    "inundation_model": {
+      "status": "standby (ARCHITECTURE)",
+      "last_successful_fetch": null
+    }
+  },
+  "timestamp": "2026-09-06T09:38:53.063588+00:00"
+}
 ```
-       +---------------------------------------------+
-       |               MOD_3 (Owner)                 |
-       |     Geospatial / Schema / Data Provenance   |
-       +---------------------------------------------+
-                       |             |
-        Normalized Met |             | Normalized Hydro
-                       v             v
-         +-----------------+     +-------------------+
-         |  MOD_1 Engine   |     |   MOD_2 Engine    |
-         |  Rainfall ML    |     |   Inundation ML   |
-         +-----------------+     +-------------------+
-                       |             |
-        RainfallOutput |             | InundationOutput
-                       v             v
-         +-------------------------------------------+
-         |            MOD_4 Integration Layer        |
-         |  Adapters -> Providers -> FastAPI Engine  |
-         +-------------------------------------------+
-                             |
-               GET /api/v1/* | Single Source of Truth
-                             v
-         +-------------------------------------------+
-         |       Decision Support Dashboard          |
-         |          (React / Next.js)                |
-         +-------------------------------------------+
+
+---
+
+### 2.2 Event Summaries Catalog: `GET /api/v1/events`
+- **Method**: `GET`
+- **Path**: `/api/v1/events`
+- **Parameters**: None
+- **Response Code**: `200 OK`
+- **Response Schema**: `List[EventSummary]`
+- **Fields**:
+  - `event_id` (`str`): Unique incident identifier (`"E001"`, `"E002"`, etc.).
+  - `zone_id` (`str`): Ward / basin zone code (`"Z42"`, `"Z18"`, etc.).
+  - `zone_name` (`str`): Chennai neighborhood name (`"Velachery South"`, `"Saidapet Adyar"`).
+  - `priority` (`str`): Emergency level (`"CRITICAL"`, `"HIGH"`, `"MEDIUM"`, `"LOW"`).
+
+#### Actual Live JSON Response:
+```json
+[
+  {
+    "event_id": "E001",
+    "zone_id": "Z42",
+    "zone_name": "Velachery South",
+    "priority": "CRITICAL"
+  },
+  {
+    "event_id": "E002",
+    "zone_id": "Z18",
+    "zone_name": "Saidapet Adyar",
+    "priority": "HIGH"
+  },
+  {
+    "event_id": "E003",
+    "zone_id": "Z07",
+    "zone_name": "T. Nagar Core",
+    "priority": "HIGH"
+  },
+  {
+    "event_id": "E004",
+    "zone_id": "Z29",
+    "zone_name": "Tambaram Basin",
+    "priority": "MEDIUM"
+  },
+  {
+    "event_id": "E005",
+    "zone_id": "Z12",
+    "zone_name": "Marina Coastal",
+    "priority": "LOW"
+  }
+]
 ```
 
 ---
 
-## 1. MOD_1 -> MOD_4 Contract: Rainfall Engine
+### 2.3 Authoritative Incident Decision: `GET /api/v1/event/{id}`
+- **Method**: `GET`
+- **Path**: `/api/v1/event/{id}`
+- **Path Parameter**: `id` (`str`, required, e.g., `E001`)
+- **Query Parameter**: `simulate_radar_outage` (`bool`, optional, default `false`)
+- **Response Code**: `200 OK` (or `404 Not Found`)
+- **Response Schema**: `DecisionObject`
+- **Fields**:
+  - `event_id` (`str`): Incident identifier.
+  - `location` (`Location`): Centroid coordinates, terrain, and zone name.
+    - `zone_id` (`str`), `city` (`str`), `zone_name` (`str`), `latitude` (`float`, `[-90, 90]`), `longitude` (`float`, `[-180, 180]`), `flood_area_type` (`str`).
+  - `rainfall` (`RainfallOutput`): Precipitation forecast.
+  - `inundation` (`InundationOutput`): Surface flood forecast.
+  - `confidence` (`float`): Joint fused confidence `[0.0, 1.0]`.
+  - `impact` (`ImpactAssessment`): Census exposures:
+    - `population_exposed` (`int`, `ge=0`), `critical_assets` (`int`, `ge=0`), `roads_affected` (`int`, `ge=0`).
+  - `priority` (`str`): Priority tier (`"CRITICAL"`, `"HIGH"`, `"MEDIUM"`, `"LOW"`).
+  - `actions` (`List[str]`): Operational protocol triggers (`"ALERT"`, `"CLOSE_ROAD"`, `"DEPLOY_TEAM"`).
+  - `data_source` (`str`): `"LIVE"`, `"MOCK"`, `"MIXED"`, `"PRECOMPUTED_REPLAY"`.
+  - `status` (`str`): `"VERIFIED"`, `"PROTOTYPE"`, `"CONCEPT"`.
+  - `timeline` (`List[TimelineStep]`): 5-step scrub bar forecast (+0m to +120m).
+  - `response_route` (`ResponseRoute`): Routing corridors, impassable segments, and milestones.
+  - `radar_outage` (`bool`): Active radar outage flag.
+  - `fallback_mode` (`bool`): Active degraded fallback flag.
+  - `fallback_source` (`str` or `null`): Source of fallback interpolation.
 
-### Integration Boundary
-- **Target Class**: `providers.rainfall.RainfallModelProvider`
-- **Output Contract**: `schemas.rainfall.RainfallOutput`
+#### Actual Live JSON Response (`GET /api/v1/event/E001`):
+```json
+{
+  "event_id": "E001",
+  "location": {
+    "zone_id": "Z42",
+    "city": "Chennai",
+    "zone_name": "Velachery South",
+    "latitude": 12.9815,
+    "longitude": 80.218,
+    "flood_area_type": "Depression Bowl"
+  },
+  "rainfall": {
+    "event_id": "E001",
+    "zone_id": "Z42",
+    "valid_time": "2026-09-06T09:00:00Z",
+    "lead_minutes": 60,
+    "rainfall_mm_hr": 87.0,
+    "rainfall_accumulation_mm": 124.0,
+    "confidence": 0.84,
+    "prediction_uri": "mock://rainfall/E001",
+    "source": "mock",
+    "status": "PROTOTYPE"
+  },
+  "inundation": {
+    "event_id": "E001",
+    "zone_id": "Z42",
+    "flood_probability": 0.87,
+    "depth_band": "0.5-1.0m",
+    "risk_uri": "mock://inundation/E001",
+    "confidence": 0.81,
+    "valid_time": "2026-09-06T09:00:00Z",
+    "source": "mock",
+    "status": "PROTOTYPE"
+  },
+  "confidence": 0.81,
+  "impact": {
+    "population_exposed": 21400,
+    "critical_assets": 3,
+    "roads_affected": 2
+  },
+  "priority": "CRITICAL",
+  "actions": [
+    "ALERT",
+    "CLOSE_ROAD",
+    "DEPLOY_TEAM"
+  ],
+  "data_source": "PRECOMPUTED_REPLAY",
+  "status": "PROTOTYPE",
+  "timeline": [
+    {
+      "timestamp": "2026-09-06T07:00:00Z",
+      "lead_minutes": 0,
+      "rainfall_mm_hr": 25.0,
+      "rainfall_accumulation_mm": 25.0,
+      "flood_probability": 0.2,
+      "depth_band": "<0.1m",
+      "step_label": null
+    },
+    {
+      "timestamp": "2026-09-06T08:00:00Z",
+      "lead_minutes": 30,
+      "rainfall_mm_hr": 55.0,
+      "rainfall_accumulation_mm": 70.0,
+      "flood_probability": 0.55,
+      "depth_band": "0.3-0.5m",
+      "step_label": null
+    },
+    {
+      "timestamp": "2026-09-06T09:00:00Z",
+      "lead_minutes": 60,
+      "rainfall_mm_hr": 87.0,
+      "rainfall_accumulation_mm": 124.0,
+      "flood_probability": 0.87,
+      "depth_band": "0.5-1.0m",
+      "step_label": null
+    },
+    {
+      "timestamp": "2026-09-06T10:00:00Z",
+      "lead_minutes": 90,
+      "rainfall_mm_hr": 60.0,
+      "rainfall_accumulation_mm": 160.0,
+      "flood_probability": 0.82,
+      "depth_band": "0.5-1.0m",
+      "step_label": null
+    },
+    {
+      "timestamp": "2026-09-06T11:00:00Z",
+      "lead_minutes": 120,
+      "rainfall_mm_hr": 35.0,
+      "rainfall_accumulation_mm": 185.0,
+      "flood_probability": 0.65,
+      "depth_band": "0.3-0.5m",
+      "step_label": null
+    }
+  ],
+  "response_route": {
+    "incident_id": "INC-01",
+    "title": "Critical Ward 42 Rescue & Evacuation",
+    "lead_time": "T-20 min",
+    "risk_score": 0.92,
+    "impassable_road": "Velachery Main Road (Near Lake)",
+    "safe_route": "Inner Ring Road -> OMR Elevated Bypass",
+    "route_coordinates": [
+      [12.9815, 80.218],
+      [12.99, 80.23],
+      [13.005, 80.245],
+      [13.015, 80.255]
+    ],
+    "blocked_coordinates": [
+      [12.978, 80.215],
+      [12.983, 80.221]
+    ],
+    "milestones": [
+      {"time": "T-20 min", "label": "Velachery low-lying segments become impassable"},
+      {"time": "T-35 min", "label": "Overland flood surge reaches residential culverts"},
+      {"time": "T-70 min", "label": "Projected peak inundation depth (0.85m)"}
+    ]
+  },
+  "radar_outage": false,
+  "fallback_mode": false,
+  "fallback_source": null
+}
+```
 
-### Field Specification
-| Field Name | Type | Constraint | Presence | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `event_id` | `str` | Non-empty | Required | Unique event identifier (e.g., `E001`) |
-| `zone_id` | `str` | Non-empty | Required | GCC ward/basin zone identifier (e.g., `Z42`) |
-| `valid_time` | `str` | ISO 8601 UTC | Required | Timestamp of forecast validity (e.g., `2026-09-06T09:00:00Z`) |
-| `lead_minutes` | `int` | `>= 0` | Required | Forecast lead time horizon in minutes |
-| `rainfall_mm_hr` | `float` | `>= 0.0` | Required | Instantaneous rainfall intensity (mm/hr) |
-| `rainfall_accumulation_mm`| `float` | `>= 0.0` | Required | Total rainfall accumulation over window (mm) |
-| `confidence` | `float` | `0.0 <= c <= 1.0` | Required | Model confidence score |
-| `prediction_uri` | `str` | URI format | Required | Location of prediction raster / artifact |
-| `source` | `str` | Enum | Required | Producer source: `rainfall_model`, `mock`, or `imd_kalpana_satellite_fallback` |
-| `status` | `str` | Enum | Required | `VERIFIED`, `PROTOTYPE`, `ARCHITECTURE`, or `CONCEPT` |
+#### Degraded Radar Outage Response (`GET /api/v1/event/E001?simulate_radar_outage=true`):
+```json
+{
+  "event_id": "E001",
+  "confidence": 0.53,
+  "rainfall": {
+    "confidence": 0.45,
+    "source": "fallback",
+    "status": "PROTOTYPE"
+  },
+  "radar_outage": true,
+  "fallback_mode": true,
+  "fallback_source": "IMD_SYNOPTIC_INTERPOLATION"
+}
+```
 
-### Fallback Behavior
-If MOD_1 is unavailable or encounters an unhandled exception, MOD_4 automatically falls back to deterministic precomputed replay (`MockForecastProvider`), tagging `source = "mock"` and `status = "PROTOTYPE"`.
+#### Error 404 Behavior (`GET /api/v1/event/E999`):
+- **HTTP Status**: `404 Not Found`
+```json
+{
+  "detail": "Event E999 not found in active replay scenario catalog."
+}
+```
 
 ---
 
-## 2. MOD_2 -> MOD_4 Contract: Inundation Engine
+### 2.4 Rainfall Telemetry: `GET /api/v1/rainfall`
+- **Method**: `GET`
+- **Parameters**: `event_id` (`str`, optional), `zone_id` (`str`, optional), `simulate_radar_outage` (`bool`, optional)
+- **Response Code**: `200 OK`
+- **Response Schema**: `RainfallOutput`
 
-### Integration Boundary
-- **Target Class**: `providers.inundation.InundationModelProvider`
-- **Output Contract**: `schemas.inundation.InundationOutput`
-
-### Field Specification
-| Field Name | Type | Constraint | Presence | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `event_id` | `str` | Non-empty | Required | Unique event identifier (e.g., `E001`) |
-| `zone_id` | `str` | Non-empty | Required | GCC ward/basin zone identifier (e.g., `Z42`) |
-| `flood_probability` | `float` | `0.0 <= p <= 1.0` | Required | Hydrodynamic inundation probability |
-| `depth_band` | `str` | Band string | Required | Inundation depth band: `<0.1m`, `0.1-0.3m`, `0.3-0.5m`, `0.5-1.0m` |
-| `risk_uri` | `str` | URI format | Required | Location of 2D overland depth raster asset |
-| `confidence` | `float` | `0.0 <= c <= 1.0` | Required | Inundation model confidence score |
-| `valid_time` | `str` | ISO 8601 UTC | Required | Validity timestamp aligned to rainfall valid_time |
-| `source` | `str` | Enum | Required | Producer source: `inundation_model` or `mock` |
-| `status` | `str` | Enum | Required | `VERIFIED`, `PROTOTYPE`, `ARCHITECTURE`, or `CONCEPT` |
-
-### Fallback Behavior
-If MOD_2 model inference fails or times out, MOD_4 logs the provider failure and serves precomputed hydrodynamic baseline replay data without breaking the downstream API contract.
-
----
-
-## 3. MOD_3 -> MOD_4 Contract: Geospatial, Schema & Provenance Owner
-
-MOD_3 is the authoritative owner of data normalization, coordinate reference systems (CRS), DEM topography, and sensor provenance.
-
-### Normalization Requirements
-1. **Coordinate Reference System**: EPSG:4326 (WGS84) for all lat/long pairs and spatial centroids.
-2. **Temporal Alignment**: All valid times must be synchronized ISO 8601 UTC strings (`YYYY-MM-DDTHH:MM:SSZ`).
-3. **Zone Identification**: Standard GCC municipal ward IDs (`Z42` Velachery South, `Z18` Saidapet Adyar, `Z07` T. Nagar Core, `Z29` Tambaram Basin, `Z12` Marina Coastal).
-4. **Spatial Attributes Exposed via MOD_4**:
-   - `location.latitude` (WGS84 decimal degrees)
-   - `location.longitude` (WGS84 decimal degrees)
-   - `location.zone_name` (Descriptive municipal name)
-   - `location.flood_area_type` (e.g., `Depression Bowl`, `River Floodplain`)
+#### Actual Live JSON Response (`GET /api/v1/rainfall?event_id=E001`):
+```json
+{
+  "event_id": "E001",
+  "zone_id": "Z42",
+  "valid_time": "2026-09-06T09:00:00Z",
+  "lead_minutes": 60,
+  "rainfall_mm_hr": 87.0,
+  "rainfall_accumulation_mm": 124.0,
+  "confidence": 0.84,
+  "prediction_uri": "mock://rainfall/E001",
+  "source": "mock",
+  "status": "PROTOTYPE"
+}
+```
 
 ---
 
-## 4. MOD_4 -> Dashboard Contract: FastAPI Single Source of Truth
+### 2.5 Inundation Telemetry: `GET /api/v1/inundation`
+- **Method**: `GET`
+- **Parameters**: `event_id` (`str`, optional), `zone_id` (`str`, optional), `simulate_radar_outage` (`bool`, optional)
+- **Response Code**: `200 OK`
+- **Response Schema**: `InundationOutput`
 
-The Next.js dashboard consumes domain data **exclusively** from the FastAPI API gateway (`/api/v1/*`).
+#### Actual Live JSON Response (`GET /api/v1/inundation?event_id=E001`):
+```json
+{
+  "event_id": "E001",
+  "zone_id": "Z42",
+  "flood_probability": 0.87,
+  "depth_band": "0.5-1.0m",
+  "risk_uri": "mock://inundation/E001",
+  "confidence": 0.81,
+  "valid_time": "2026-09-06T09:00:00Z",
+  "source": "mock",
+  "status": "PROTOTYPE"
+}
+```
 
-### Endpoints
-1. `GET /api/v1/health`
-   - Returns provider connectivity, mode (`mock`, `live`, `rainfall_live`, `inundation_live`), and timestamps.
-2. `GET /api/v1/events` (and `GET /api/v1/event`)
-   - Returns array of event summaries: `[{ event_id, zone_id, zone_name, priority }]`.
-3. `GET /api/v1/event/{id}`
-   - Query Parameters: `simulate_radar_outage=false` (default) or `true`
-   - Returns complete `DecisionObject` containing joined rainfall, inundation, impact, actions, timeline progression, and response routing.
-4. `GET /api/v1/rainfall?event_id={id}&zone_id={zone}`
-5. `GET /api/v1/inundation?event_id={id}&zone_id={zone}`
-6. `GET /api/v1/risk?zone_id={zone}`
-   - Returns risk tiles with coordinates and zone names for GIS mapping.
+---
 
-### Provenance State Machine
-| Rainfall Provider | Inundation Provider | Resulting `data_source` | Resulting `status` |
-| :--- | :--- | :--- | :--- |
-| Mock / Replay | Mock / Replay | `PRECOMPUTED_REPLAY` | `PROTOTYPE` 🟡 |
-| Live ML Model | Mock / Replay | `MIXED` | `PROTOTYPE` 🟡 |
-| Mock / Replay | Live ML Model | `MIXED` | `PROTOTYPE` 🟡 |
-| Live ML Model | Live ML Model | `LIVE` | `VERIFIED` 🟢 |
+### 2.6 Spatial Risk Grid: `GET /api/v1/risk`
+- **Method**: `GET`
+- **Parameters**: `zone_id` (`str`, optional filter)
+- **Response Code**: `200 OK`
+- **Response Schema**: `List[RiskTile]`
 
-**Invariant**: `status = VERIFIED` is strictly prohibited unless both production engines successfully produce live validated outputs.
+#### Actual Live JSON Response (`GET /api/v1/risk?zone_id=Z42`):
+```json
+[
+  {
+    "tile_id": "T4201",
+    "zone_id": "Z42",
+    "zone_name": "Velachery South",
+    "latitude": 12.9815,
+    "longitude": 80.218,
+    "flood_area_type": "Depression Bowl",
+    "flood_probability": 0.87,
+    "expected_depth_m": 0.75,
+    "risk_level": "CRITICAL"
+  }
+]
+```

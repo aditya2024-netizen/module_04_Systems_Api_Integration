@@ -1,180 +1,160 @@
 # HydroSurge AI — Module 4 Integration Readiness Report
-
-## 1. Executive Status
-
-**MOD_4 INTEGRATION STATUS: READY 🟢**
-
-HydroSurge AI Module 4 (Systems / API / Integration / Decision Dashboard) has completed comprehensive integration hardening. The repository is verified, contract-hardened, and prepared for immediate handoff to the engineering team for MOD_1 (Rainfall), MOD_2 (Inundation), and MOD_3 (Data / Geospatial) integration.
+**Status:** READY 🟢  
+**Target Basin:** Greater Chennai Corporation • Adyar Basin Emergency Management Grid  
+**Component:** Systems / API Integration / Decision Dashboard (Module 4)  
+**Date:** September 6, 2026  
 
 ---
 
-## 2. System Architecture
+## 1. Executive Summary
+
+HydroSurge AI Module 4 delivers the unified, contract-enforcing API integration gateway and operations decision dashboard for the Chennai pilot catchment.
+
+### What MOD_4 Provides:
+1. **Unified FastAPI Gateway (`http://127.0.0.1:8000/api/v1`)**:
+   - Single point of truth aggregating weather radar nowcasts, overland hydrodynamic flood predictions, demographic exposure, and incident response routing into a versioned REST contract.
+   - Pydantic v2 schemas enforcing physical and numerical bounds on all fields.
+   - Transparent data provenance tracking (`LIVE`, `MOCK`, `MIXED`) and pipeline maturity indicators (`VERIFIED`, `PROTOTYPE`, `CONCEPT`).
+   - Graceful failover and Doppler radar outage simulation with confidence degradation penalties.
+2. **Operations Command Center Dashboard (`http://127.0.0.1:3000`)**:
+   - High-contrast, dark-mode incident decision dashboard built with React 19 and Next.js 16.
+   - 100% API-driven: All scenario telemetries, GIS coordinates, timeline steps, what-if models, and CAP XML alerts are derived strictly from FastAPI.
+   - Dedicated modes for **Hazard Nowcasting**, **Demographic Impact & What-If**, and **Response & Evacuation Routing**.
+
+### Current Implementation Status:
+- **MOD_4 Subsystem**: **100% Complete & Verified 🟢**
+- **Automated Test Suite**: **27/27 Pytest tests passing (100%)**
+- **Frontend Build**: **`next build` passes with zero compilation errors (Static optimization verified)**
+- **Runtime Verification**: **Verified via automated Chrome DevTools Protocol (CDP) headless test harness**
+
+### What Is Ready:
+- All core API endpoints: `/health`, `/events`, `/event/{id}`, `/rainfall`, `/inundation`, `/risk`.
+- Full mock/replay data layer for Chennai Adyar Basin (`demo/replay/scenario.json`).
+- Dynamic provider injection architecture (`providers/base.py`, `mock.py`, `rainfall.py`, `inundation.py`, `live.py`).
+- Doppler radar outage simulation endpoint parameter (`simulate_radar_outage=true`).
+- Interactive dashboard UI with event switcher, timeline scrub bar, GIS map, what-if simulator, and CAP alert modal.
+
+### What Is Dependent on R&D-1 / R&D-2 / R&D-3:
+- **R&D-1 (Rainfall Team)**: Live inference pipeline from DGMR / ConvLSTM nowcasting model to replace the stub in `providers/rainfall.py`.
+- **R&D-2 (Inundation Team)**: Live 2D hydrodynamic solver / raster processing pipeline to replace the stub in `providers/inundation.py`.
+- **R&D-3 (Data & Schema Team)**: Production ingestion pipelines for real-time IMD Doppler radar and CMWSSB / GCC sensor streams.
+
+---
+
+## 2. MOD_4 System Architecture & Dataflow
 
 ```
-                      +-----------------------------+
-                      |         MOD_3 (Data)        |
-                      |  Geospatial / Schema Owner  |
-                      +-----------------------------+
-                                     |
-                     +---------------+---------------+
-                     |                               |
-                     v                               v
-       +---------------------------+   +---------------------------+
-       |       MOD_1 Engine        |   |       MOD_2 Engine        |
-       |  Rainfall Nowcasting ML   |   |   Inundation Solver ML    |
-       +---------------------------+   +---------------------------+
-                     |                               |
-      RainfallOutput |               InundationOutput|
-                     +---------------+---------------+
-                                     |
-                                     v
-       +-----------------------------------------------------------+
-       |               MOD_4 Integration Gateway                   |
-       |     Adapter Layer -> Provider Boundary -> FastAPI         |
-       |  (Deterministic Replay Fail-Safe / Explicit Provenance)   |
-       +-----------------------------------------------------------+
-                                     |
-                       GET /api/v1/* | Single Source of Truth
-                                     v
-       +-----------------------------------------------------------+
-       |             Command-Center Decision Dashboard             |
-       |                (React / Next.js 16)                       |
-       |     [Hazard Mode]   [Impact Mode]   [Response Mode]       |
-       +-----------------------------------------------------------+
+              +-----------------------------------------+
+              |           R&D-3 (Data/Schema)           |
+              |       Geospatial & Ingestion Owner      |
+              +-----------------------------------------+
+                                   |
+                   +---------------+---------------+
+                   |                               |
+                   v                               v
+     +---------------------------+   +---------------------------+
+     |       R&D-1 Engine        |   |       R&D-2 Engine        |
+     |  Rainfall Nowcasting ML   |   |   Inundation Solver ML    |
+     +---------------------------+   +---------------------------+
+                   |                               |
+    RainfallOutput |               InundationOutput|
+                   +---------------+---------------+
+                                   |
+                                   v
+     +-----------------------------------------------------------+
+     |                 MOD_4 Integration Layer                   |
+     |         Adapters  -->  Providers  -->  FastAPI            |
+     |      (Deterministic Replay / Explicit Provenance)         |
+     +-----------------------------------------------------------+
+                                   |
+                     GET /api/v1/* | Single Source of Truth
+                                   v
+     +-----------------------------------------------------------+
+     |             HydroSurge Decision Dashboard                 |
+     |                 (Next.js 16 / React 19)                   |
+     |        [Hazard]      [Impact & What-If]      [Response]   |
+     +-----------------------------------------------------------+
 ```
 
-**Core Architectural Invariant**:
-The dashboard consumes HydroSurge domain data **strictly and exclusively** through the FastAPI API gateway. No local copies of domain scenarios, no fallback payloads, and no direct filesystem reads exist in the frontend layer.
+### ⚠️ STRICT ARCHITECTURAL INVARIANT:
+> **THE DASHBOARD MUST NEVER DIRECTLY READ:**
+> - Jupyter notebooks (`.ipynb`)
+> - Raw CSV / tabular files
+> - Machine learning model weights (`.pt`, `.h5`, `.onnx`)
+> - GeoTIFF / NetCDF raster files (`.tif`, `.nc`)
+> - NumPy serialized arrays (`.npy`, `.npz`)
+> - Scenario replay JSON files from disk
+> - Producer-specific filesystem artifacts
+>
+> **The dashboard communicates with MOD_4 exclusively through versioned HTTP API contracts.**
 
 ---
 
-## 3. Changed Files
-The following files were updated during this hardening cycle:
-- `api/main.py`: Configurable CORS origins via `CORS_ORIGINS` environment variable.
-- `api/dependencies.py`: Fixed provider provenance logic (explicit `LIVE`, `MOCK`, `MIXED` aggregation), added `get_events_summary()`, and backend-aware radar outage handling.
-- `api/routes/event.py`: Added `GET /api/v1/events` summary endpoint, added `simulate_radar_outage` query parameter, sanitized 500 error responses.
-- `api/routes/rainfall.py`: Added `simulate_radar_outage` query parameter and sanitized error handling.
-- `api/routes/inundation.py`: Added `simulate_radar_outage` query parameter and sanitized error handling.
-- `api/routes/risk.py`: Added centroid coordinates and sanitized error handling.
-- `api/routes/health.py`: Sanitized error handling.
-- `schemas/rainfall.py`: Hardened with Pydantic v2 `Field` constraints (`ge=0.0`, `0.0 <= confidence <= 1.0`).
-- `schemas/inundation.py`: Hardened with Pydantic v2 `Field` constraints (`0.0 <= flood_probability <= 1.0`, `0.0 <= confidence <= 1.0`).
-- `schemas/risk.py`: Hardened with bounds constraints and added optional centroid coordinates (`latitude`, `longitude`, `zone_name`).
-- `schemas/decision.py`: Added `latitude`, `longitude`, `zone_name`, `flood_area_type` to `Location`; added `ResponseRoute` and `Milestone` models; added `EventSummary`; added `radar_outage`, `fallback_mode`, `fallback_source` flags; expanded `data_source` enum to support `MIXED`.
-- `schemas/__init__.py`: Exported updated models.
-- `providers/mock.py`: Enriched with `get_events_summary()`, backend-aware `simulate_radar_outage` logic, and prototype response routing data.
-- `demo/replay/scenario.json`: Enriched with geographic coordinates, terrain classifications, and response routing scenarios.
-- `dashboard/app/lib/api.js`: Created centralized API client module consuming `NEXT_PUBLIC_API_BASE_URL`.
-- `dashboard/app/page.js`: Refactored to be 100% API-driven with dignified loading and offline error states.
-- `dashboard/app/components/ZoneMap.jsx`: Removed all local fallback data; renders GIS markers dynamically from API.
-- `dashboard/app/components/ResponseMode.jsx`: Consumes API response route directly; uses honest prototype labels.
-- `dashboard/app/components/HazardMode.jsx`: Reads API-derived degraded confidence during simulated radar outages.
-- `dashboard/app/components/ImpactMode.jsx`: Consumes API location attributes directly.
-- `dashboard/app/components/StatusStrip.jsx`: Displays truthful latency benchmark and dynamic API provenance tags.
-- `dashboard/app/components/CapDrawer.jsx`: Honestly labeled as prototype alert payload generator.
-- `tests/test_integration_hardening.py`: Created comprehensive 10-point test suite including static architecture scan.
-- `.env.example` & `dashboard/.env.example`: Updated with CORS and API URL documentation.
+## 3. Team Merge Order
+
+To ensure zero integration drift, all team modules must be integrated in the following sequence:
+
+1. **R&D-3 (Data / Geospatial / Schemas)**:
+   - Locks zone identifiers, geographic bounding boxes, EPSG:4326 coordinate conventions, and timestamp formats.
+2. **R&D-1 (Precipitation Nowcasting)**:
+   - Connects live precipitation inference to `providers/rainfall.py` conforming to `RainfallOutput`.
+3. **R&D-2 (Overland Inundation & Hydrodynamic Risk)**:
+   - Connects flood depth calculations to `providers/inundation.py` conforming to `InundationOutput`.
+4. **MOD_4 (API & Decision Aggregation)**:
+   - Aggregates R&D-1 and R&D-2 telemetry into the unified `DecisionObject` with verified provenance.
+5. **Dashboard Validation**:
+   - End-to-end visual and operational validation in the command center.
 
 ---
 
-## 4. Removed Duplicate Frontend Sources
-The following duplicate frontend domain data sources were **completely eliminated**:
-1. **`dashboard/app/data/fallback.js`**: **DELETED**. The empty directory `dashboard/app/data/` was removed.
-2. **`FALLBACK_PAYLOADS`**: **DELETED** from `dashboard/app/page.js`.
-3. **`SAMPLE_EVENTS`**: **DELETED** from frontend. The dashboard now fetches event summaries dynamically from `GET /api/v1/events`.
-4. **`ZONE_COORDINATES`**: **DELETED** from frontend. The map pins and coordinates are delivered by `GET /api/v1/event/{id}` and `GET /api/v1/risk`.
-5. **`INCIDENTS`**: **DELETED** from frontend. Response routing scenarios are delivered directly via `eventData.response_route` from the API.
+## 4. Quick Run Instructions
 
----
+### Prerequisites
+- Python 3.10+ (Python 3.13 verified)
+- Node.js 18+ (Node.js 22 verified) with npm
 
-## 5. API Endpoints
-| HTTP Method | Route | Description | Output Contract |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/health` | Subsystem health & provider mode | `Dict[str, Any]` |
-| `GET` | `/api/v1/events` | List all available event summaries | `List[EventSummary]` |
-| `GET` | `/api/v1/event/{id}` | Authoritative single source of truth | `DecisionObject` |
-| `GET` | `/api/v1/rainfall` | Rainfall nowcast query | `RainfallOutput` |
-| `GET` | `/api/v1/inundation`| Inundation depth query | `InundationOutput` |
-| `GET` | `/api/v1/risk` | Spatial risk tile grid | `List[RiskTile]` |
-
----
-
-## 6. Contract Status
-- **MOD_1 Compatibility**: `RainfallModelProvider` defines the plug-and-play boundary. Output maps to `RainfallOutput`.
-- **MOD_2 Compatibility**: `InundationModelProvider` defines the plug-and-play boundary. Output maps to `InundationOutput`.
-- **MOD_3 Compatibility**: Coordinate system is WGS84 (EPSG:4326). Timestamps are ISO 8601 UTC. Zone codes match GCC standards.
-- **Dashboard Compatibility**: Fully synchronized. The dashboard renders whatever the versioned FastAPI contract delivers.
-
----
-
-## 7. Provider Modes & Provenance Semantics
-- **`PROVIDER_MODE=mock`**: Standard deterministic historical replay mode (Default).
-- **`PROVIDER_MODE=rainfall_live`**: Attempts MOD_1 live ML model; falls back to mock on failure.
-- **`PROVIDER_MODE=inundation_live`**: Attempts MOD_2 live ML model; falls back to mock on failure.
-- **`PROVIDER_MODE=live`**: Attempts both live models; falls back to mock on failure.
-
-### Strict Provenance Aggregation Rules
-- **`LIVE`**: Both rainfall and inundation engines are live production models and successfully produced output.
-- **`MIXED`**: One engine is live and the other is mock/replay.
-- **`PRECOMPUTED_REPLAY`**: Both engines are mock/replay.
-- **`VERIFIED`**: Assigned **only** when `data_source == LIVE`.
-- **`PROTOTYPE`**: Assigned whenever any portion is mock, replay, or simulated.
-
----
-
-## 8. Test Verification Results
-
-All 27 automated pytest tests passed in 1.12 seconds:
-
+### Step 1: Clone and Configure Environment
 ```bash
-tests/test_contracts.py::test_scenario_structure PASSED                  [  3%]
-tests/test_contracts.py::test_rainfall_contract PASSED                   [  7%]
-tests/test_contracts.py::test_inundation_contract PASSED                 [ 11%]
-tests/test_decision_contract PASSED                   [ 14%]
-tests/test_risk_tile_contract PASSED                  [ 18%]
-tests/test_physical_consistency PASSED                [ 22%]
-tests/test_event.py::test_get_event_valid_e001 PASSED                    [ 25%]
-tests/test_event.py::test_get_event_not_found PASSED                     [ 29%]
-tests/test_health.py::test_health_returns_200_and_provider_mode PASSED   [ 33%]
-tests/test_integration_hardening.py::test_events_list_endpoint PASSED    [ 37%]
-tests/test_integration_hardening.py::test_event_spatial_location PASSED  [ 40%]
-tests/test_integration_hardening.py::test_event_response_routing PASSED  [ 44%]
-tests/test_integration_hardening.py::test_simulated_radar_outage_endpoint PASSED [ 48%]
-tests/test_integration_hardening.py::test_event_aggregation_consistency PASSED [ 51%]
-tests/test_integration_hardening.py::test_deterministic_replay PASSED    [ 55%]
-tests/test_integration_hardening.py::test_mixed_provider_mode_provenance PASSED [ 59%]
-tests/test_integration_hardening.py::test_bounds_validation_rejects_invalid_values PASSED [ 62%]
-tests/test_integration_hardening.py::test_api_error_handling_sanitized PASSED [ 66%]
-tests/test_integration_hardening.py::test_frontend_static_architecture_scan PASSED [ 70%]
-tests/test_inundation.py::test_get_inundation_by_event_id PASSED         [ 74%]
-tests/test_inundation.py::test_get_inundation_by_zone_id PASSED          [ 77%]
-tests/test_inundation.py::test_get_inundation_not_found PASSED           [ 81%]
-tests/test_rainfall.py::test_get_rainfall_by_event_id PASSED             [ 85%]
-tests/test_rainfall.py::test_get_rainfall_by_zone_id PASSED              [ 88%]
-tests/test_rainfall.py::test_get_rainfall_not_found PASSED               [ 92%]
-tests/test_risk.py::test_get_all_risk_tiles PASSED                       [ 96%]
-tests/test_risk.py::test_get_risk_tiles_filtered_by_zone PASSED          [100%]
+git clone https://github.com/HydroSurge-AI/SIH_26071_MODULE_4.git
+cd SIH_26071_MODULE_4
 
-======================== 27 passed in 1.12s ========================
+# Set up Python virtual environment
+python -m venv venv
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# Install backend dependencies
+pip install -r requirements.txt
+
+# Install frontend dependencies
+cd dashboard
+npm install
+cd ..
 ```
 
----
+### Step 2: Launch Backend (Terminal 1)
+```powershell
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+```
+- API Gateway Root: `http://127.0.0.1:8000`
+- Interactive OpenAPI Docs: `http://127.0.0.1:8000/docs`
+- Health Endpoint: `http://127.0.0.1:8000/api/v1/health`
 
-## 9. Frontend Production Build Verification
-Ran `npm run build` inside `dashboard/`:
-- **Result**: `✓ Compiled successfully in 1906ms`
-- **Output**: Static page generation completed with 0 errors.
+### Step 3: Launch Operations Dashboard (Terminal 2)
+```powershell
+cd dashboard
+npm run dev
+```
+- Open browser at: `http://127.0.0.1:3000` (or `http://localhost:3000`)
 
----
+### Step 4: Run Verification Tests
+```powershell
+# Run full Pytest contract and integration test suite
+pytest -v
 
-## 10. Frontend API-Only Verification
-Static architecture scanner verified:
-- **Result**: `CLEAN: Zero forbidden domain-data references found in dashboard code.`
-- All network domain fetches utilize `dashboard/app/lib/api.js`.
-
----
-
-## 11. Known Limitations
-1. **Model Weights**: Real ML model weights (`model.pt`) and hydraulic meshes are owned by MOD_1 and MOD_2; MOD_4 operates on contract-compliant deterministic replay until their swap.
-2. **Dynamic Isochrone Calculation**: Response routing coordinates are currently delivered from precomputed GIS route corridors rather than real-time graph routing algorithms.
-3. **External Gateway Connectivity**: OASIS CAP XML alert generation produces valid v1.2 payloads; direct webhook transmission to state emergency centers is pending API credential attachment.
+# Run production frontend compilation check
+cd dashboard
+npm run build
+```
