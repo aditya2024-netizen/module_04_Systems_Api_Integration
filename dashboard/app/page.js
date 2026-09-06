@@ -64,13 +64,13 @@ export default function DashboardPage() {
       const ev = await fetchEvent(initialId, { simulateRadarOutage: isRadarOutage });
       setEventData(ev);
       setApiConnected(true);
-      setInitialLoading(false);
     } catch (err) {
       console.error("API Gateway error during initial load:", err);
       setApiConnected(false);
       setErrorMessage(
         "Unable to connect to HydroSurge API Gateway at http://127.0.0.1:8000. Ensure the FastAPI service is running."
       );
+    } finally {
       setInitialLoading(false);
     }
   }
@@ -82,6 +82,15 @@ export default function DashboardPage() {
   // Fetch Event when selectedEventId or isRadarOutage changes
   useEffect(() => {
     if (!selectedEventId || initialLoading) return;
+
+    // Deduplicate if already matches current eventData
+    if (
+      eventData &&
+      eventData.event_id === selectedEventId &&
+      eventData.radar_outage === isRadarOutage
+    ) {
+      return;
+    }
 
     let isMounted = true;
     setEventLoading(true);
@@ -117,7 +126,7 @@ export default function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [selectedEventId, isRadarOutage, initialLoading]);
+  }, [selectedEventId, isRadarOutage, initialLoading, eventData]);
 
   const handleToggleRadarOutage = () => {
     setIsRadarOutage((prev) => !prev);
