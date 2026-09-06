@@ -50,211 +50,221 @@ export default function ImpactMode({ eventData }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Population Vulnerability */}
-        <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between">
+        <div className="panel-technical corner-accents p-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
               <div className="flex items-center gap-2">
-                <span className="text-base">👥</span>
-                <h3 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wide">
-                  Demographic Vulnerability
-                </h3>
+                <span className="h-2 w-2 rounded-full bg-rose-500 ring-2 ring-rose-500/20"></span>
+                <span className="label-tactical">DEMOGRAPHIC VULNERABILITY MATRIX</span>
               </div>
-              <span className="text-xs font-telemetry text-rose-400 font-semibold">
-                High Risk Exposure
+              <span className="text-[11px] font-telemetry px-2 py-0.5 rounded bg-rose-950/60 border border-rose-500/40 text-rose-300 font-semibold tracking-wide">
+                HIGH RISK EXPOSURE
               </span>
             </div>
 
             <div className="mt-4">
-              <div className="text-xs text-[var(--text-secondary)]">Total exposed population</div>
-              <div className="text-3xl font-bold font-telemetry text-[var(--text-primary)] mt-1">
-                {basePop.toLocaleString()}{" "}
-                <span className="text-xs font-normal text-[var(--text-secondary)]">residents in zone</span>
+              <div className="text-[11px] uppercase tracking-wider text-[var(--text-secondary)] font-mono">Total exposed zone population</div>
+              <div className="text-3xl font-extrabold font-telemetry text-[var(--text-primary)] mt-1 flex items-baseline gap-2">
+                {basePop.toLocaleString()}
+                <span className="text-xs font-normal text-[var(--text-secondary)] font-sans">residents within active hazard envelope</span>
               </div>
             </div>
 
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-4 space-y-3">
               <div>
                 <div className="flex justify-between text-xs text-[var(--text-secondary)] mb-1">
-                  <span>Children under 10 years (18%)</span>
-                  <span className="font-telemetry text-slate-200">{childrenPop.toLocaleString()}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    <span>Children under 10 years (18%)</span>
+                  </span>
+                  <span className="font-telemetry text-slate-200 font-semibold">{childrenPop.toLocaleString()}</span>
                 </div>
-                <div className="w-full bg-[var(--canvas)] h-2 rounded-full overflow-hidden">
-                  <div className="bg-sky-500 h-full rounded-full" style={{ width: "18%" }}></div>
+                <div className="w-full bg-[var(--canvas)] h-2 rounded-full overflow-hidden border border-[var(--border)]">
+                  <div className="bg-gradient-to-r from-sky-600 to-sky-400 h-full rounded-full transition-all duration-500" style={{ width: "18%" }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-xs text-[var(--text-secondary)] mb-1">
-                  <span>Elderly over 65 years (14%)</span>
-                  <span className="font-telemetry text-slate-200">{elderlyPop.toLocaleString()}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                    <span>Elderly over 65 years (14%)</span>
+                  </span>
+                  <span className="font-telemetry text-slate-200 font-semibold">{elderlyPop.toLocaleString()}</span>
                 </div>
-                <div className="w-full bg-[var(--canvas)] h-2 rounded-full overflow-hidden">
-                  <div className="bg-amber-500 h-full rounded-full" style={{ width: "14%" }}></div>
+                <div className="w-full bg-[var(--canvas)] h-2 rounded-full overflow-hidden border border-[var(--border)]">
+                  <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-500" style={{ width: "14%" }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-xs text-[var(--text-secondary)] mb-1">
-                  <span>Ground-floor informal housing (38%)</span>
-                  <span className="font-telemetry text-slate-200">{vulnerableHousingPop.toLocaleString()}</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
+                    <span>Ground-floor informal housing (38%)</span>
+                  </span>
+                  <span className="font-telemetry text-slate-200 font-semibold">{vulnerableHousingPop.toLocaleString()}</span>
                 </div>
-                <div className="w-full bg-[var(--canvas)] h-2 rounded-full overflow-hidden">
-                  <div className="bg-rose-500 h-full rounded-full" style={{ width: "38%" }}></div>
+                <div className="w-full bg-[var(--canvas)] h-2 rounded-full overflow-hidden border border-[var(--border)]">
+                  <div className="bg-gradient-to-r from-rose-600 to-rose-400 h-full rounded-full transition-all duration-500" style={{ width: "38%" }}></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[11px] text-[var(--text-secondary)]">
-            Census 2021 projection calibrated with Ward survey telemetry
+          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[10px] text-[var(--text-secondary)] flex justify-between font-mono">
+            <span>DATA SOURCE: CENSUS 2021 + GCC WARD REGISTRY</span>
+            <span className="text-sky-400 font-telemetry">EPSG:4326 CALIBRATED</span>
           </div>
         </div>
 
         {/* Critical Infrastructure Assets */}
-        <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between">
+        <div className="panel-technical corner-accents p-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
               <div className="flex items-center gap-2">
-                <span className="text-base">🏥</span>
-                <h3 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wide">
-                  Critical Infrastructure at Risk
-                </h3>
+                <span className="h-2 w-2 rounded-full bg-amber-400 ring-2 ring-amber-400/20"></span>
+                <span className="label-tactical">CRITICAL INFRASTRUCTURE DEFENSE</span>
               </div>
-              <span className="text-xs font-telemetry text-amber-300 font-semibold">
-                Priority Asset Defense
+              <span className="text-[11px] font-telemetry px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/40 text-amber-300 font-semibold tracking-wide">
+                PRIORITY ASSET PROTECTION
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 mt-4">
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)] text-center">
-                <div className="text-2xl font-bold font-telemetry text-rose-400">
+            <div className="grid grid-cols-3 gap-2.5 mt-4">
+              <div className="panel-elevated p-3 rounded text-center">
+                <div className="text-2xl font-extrabold font-telemetry text-rose-400">
                   {baseAssets}
                 </div>
-                <div className="text-[11px] text-[var(--text-secondary)] mt-1">Hospitals / Clinics</div>
+                <div className="text-[10px] uppercase font-mono text-[var(--text-secondary)] mt-1">Hospitals / Clinics</div>
               </div>
 
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)] text-center">
-                <div className="text-2xl font-bold font-telemetry text-amber-400">
+              <div className="panel-elevated p-3 rounded text-center">
+                <div className="text-2xl font-extrabold font-telemetry text-amber-400">
                   1
                 </div>
-                <div className="text-[11px] text-[var(--text-secondary)] mt-1">Power Substation</div>
+                <div className="text-[10px] uppercase font-mono text-[var(--text-secondary)] mt-1">Power Substation</div>
               </div>
 
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)] text-center">
-                <div className="text-2xl font-bold font-telemetry text-sky-400">
+              <div className="panel-elevated p-3 rounded text-center">
+                <div className="text-2xl font-extrabold font-telemetry text-sky-400">
                   {baseRoads}
                 </div>
-                <div className="text-[11px] text-[var(--text-secondary)] mt-1">Road Arteries</div>
+                <div className="text-[10px] uppercase font-mono text-[var(--text-secondary)] mt-1">Arterial Roads</div>
               </div>
             </div>
 
             <div className="mt-4 space-y-2 text-xs font-telemetry">
-              <div className="p-2 rounded bg-[var(--card-elevated)] border border-[var(--border)] flex items-center justify-between">
-                <span>Velachery Primary Health Centre:</span>
-                <span className="text-rose-400 font-semibold">Preposition Sandbags</span>
+              <div className="p-2 rounded panel-elevated flex items-center justify-between">
+                <span className="text-slate-300 font-medium">Velachery Primary Health Centre:</span>
+                <span className="text-rose-400 font-semibold text-[11px] px-1.5 py-0.5 rounded bg-rose-950/50 border border-rose-800/40">Preposition Sandbags</span>
               </div>
-              <div className="p-2 rounded bg-[var(--card-elevated)] border border-[var(--border)] flex items-center justify-between">
-                <span>110kV TANGEDCO Substation:</span>
-                <span className="text-amber-300 font-semibold">Standby Dewatering Pump</span>
+              <div className="p-2 rounded panel-elevated flex items-center justify-between">
+                <span className="text-slate-300 font-medium">110kV TANGEDCO Substation:</span>
+                <span className="text-amber-300 font-semibold text-[11px] px-1.5 py-0.5 rounded bg-amber-950/50 border border-amber-800/40">Standby Dewatering Pump</span>
               </div>
-              <div className="p-2 rounded bg-[var(--card-elevated)] border border-[var(--border)] flex items-center justify-between">
-                <span>Adyar Feeder Arterial Bridges:</span>
-                <span className="text-sky-300 font-semibold">Traffic Barricades Staged</span>
+              <div className="p-2 rounded panel-elevated flex items-center justify-between">
+                <span className="text-slate-300 font-medium">Adyar Feeder Arterial Bridges:</span>
+                <span className="text-sky-300 font-semibold text-[11px] px-1.5 py-0.5 rounded bg-sky-950/50 border border-sky-800/40">Traffic Barricades Staged</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[11px] text-[var(--text-secondary)]">
-            GCC Disaster Management Command asset registry
+          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[10px] text-[var(--text-secondary)] flex justify-between font-mono">
+            <span>REGISTRY: GCC DISASTER MANAGEMENT COMMAND</span>
+            <span className="text-emerald-400 font-telemetry">STATUS: STAGED</span>
           </div>
         </div>
 
       </div>
 
       {/* 2. "Why this alert?" Feature Contribution / Explainability Breakdown */}
-      <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4">
+      <div className="panel-technical corner-accents p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[var(--border)] gap-2">
           <div>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-              Alert Attribution & Model Explainability ("Why this alert?")
-            </h3>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-sky-400 ring-2 ring-sky-400/20"></span>
+              <span className="label-tactical">HYDRODYNAMIC ATTRIBUTION & EXPLAINABILITY</span>
+            </div>
             <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-              Factor contribution breakdown synthesized from hydrodynamic gradient features
+              Factor contribution weights synthesized from 2D hydro-accumulation and antecedent moisture telemetry
             </p>
           </div>
-          <span className="text-xs font-telemetry px-2 py-0.5 rounded bg-[var(--card-elevated)] text-sky-300 border border-[var(--border)] shrink-0">
-            Model Attribution: Verified
+          <span className="text-[11px] font-telemetry px-2.5 py-1 rounded bg-[var(--card-elevated)] text-sky-300 border border-sky-500/30 font-semibold shrink-0">
+            MODEL ATTRIBUTION: SHAP SYNTHESIS
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)]">
+          <div className="panel-elevated p-3.5 rounded">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-secondary)]">Soil Saturation</span>
-              <span className="font-telemetry font-bold text-rose-400">34%</span>
+              <span className="text-[var(--text-secondary)] font-medium">Antecedent Saturation</span>
+              <span className="font-telemetry font-bold text-rose-400 text-sm">34%</span>
             </div>
-            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden">
-              <div className="bg-rose-500 h-full rounded-full" style={{ width: "34%" }}></div>
+            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden border border-[var(--border)]">
+              <div className="bg-gradient-to-r from-rose-600 to-rose-400 h-full rounded-full transition-all duration-500" style={{ width: "34%" }}></div>
             </div>
-            <div className="text-[10px] text-slate-400 mt-2">
+            <div className="text-[10px] text-slate-400 mt-2 font-mono">
               Near 92% antecedent saturation from prior 48h rains
             </div>
           </div>
 
-          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)]">
+          <div className="panel-elevated p-3.5 rounded">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-secondary)]">Peak Rain Burst</span>
-              <span className="font-telemetry font-bold text-amber-400">28%</span>
+              <span className="text-[var(--text-secondary)] font-medium">Peak Rain Burst</span>
+              <span className="font-telemetry font-bold text-amber-400 text-sm">28%</span>
             </div>
-            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden">
-              <div className="bg-amber-500 h-full rounded-full" style={{ width: "28%" }}></div>
+            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden border border-[var(--border)]">
+              <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-500" style={{ width: "28%" }}></div>
             </div>
-            <div className="text-[10px] text-slate-400 mt-2">
+            <div className="text-[10px] text-slate-400 mt-2 font-mono">
               High intensity convective burst ({baseRain} mm/hr)
             </div>
           </div>
 
-          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)]">
+          <div className="panel-elevated p-3.5 rounded">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-secondary)]">Canal Bottleneck</span>
-              <span className="font-telemetry font-bold text-sky-400">22%</span>
+              <span className="text-[var(--text-secondary)] font-medium">Canal Bottleneck</span>
+              <span className="font-telemetry font-bold text-sky-400 text-sm">22%</span>
             </div>
-            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden">
-              <div className="bg-sky-500 h-full rounded-full" style={{ width: "22%" }}></div>
+            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden border border-[var(--border)]">
+              <div className="bg-gradient-to-r from-sky-600 to-sky-400 h-full rounded-full transition-all duration-500" style={{ width: "22%" }}></div>
             </div>
-            <div className="text-[10px] text-slate-400 mt-2">
+            <div className="text-[10px] text-slate-400 mt-2 font-mono">
               Adyar river outlet hydraulic constriction at culvert
             </div>
           </div>
 
-          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)]">
+          <div className="panel-elevated p-3.5 rounded">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-secondary)]">Tidal Backflow</span>
-              <span className="font-telemetry font-bold text-indigo-400">16%</span>
+              <span className="text-[var(--text-secondary)] font-medium">Tidal Surge Backflow</span>
+              <span className="font-telemetry font-bold text-indigo-400 text-sm">16%</span>
             </div>
-            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden">
-              <div className="bg-indigo-500 h-full rounded-full" style={{ width: "16%" }}></div>
+            <div className="w-full bg-[var(--canvas)] h-2 rounded-full mt-2 overflow-hidden border border-[var(--border)]">
+              <div className="bg-gradient-to-r from-indigo-600 to-indigo-400 h-full rounded-full transition-all duration-500" style={{ width: "16%" }}></div>
             </div>
-            <div className="text-[10px] text-slate-400 mt-2">
+            <div className="text-[10px] text-slate-400 mt-2 font-mono">
               Coastal high-tide elevation impeding canal discharge
             </div>
           </div>
         </div>
 
-        <div className="mt-3 p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)] text-xs text-[var(--text-secondary)]">
-          <strong className="text-[var(--text-primary)]">Analytical Synthesis:</strong> Inundation hazard is primarily driven by saturation-excess overland runoff rather than infiltration deficit. Convective rain volume of {baseRain} mm/hr immediately translates to surface pooling due to depressed basin topography ({areaType}).
+        <div className="mt-3.5 p-3 rounded panel-elevated text-xs text-[var(--text-secondary)] flex items-start gap-2.5">
+          <span className="text-sky-400 text-base leading-none">ℹ</span>
+          <div>
+            <strong className="text-[var(--text-primary)] uppercase tracking-wider font-mono text-[11px]">Analytical Synthesis: </strong>
+            Inundation hazard is primarily driven by saturation-excess overland runoff rather than infiltration deficit. Convective precipitation of {baseRain} mm/hr immediately translates to rapid surface pooling due to depressed basin topography ({areaType}).
+          </div>
         </div>
       </div>
 
       {/* 3. Interactive What-if Simulator */}
-      <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 space-y-4">
+      <div className="panel-technical corner-accents p-4 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[var(--border)] gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base">🎛️</span>
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                Interactive What-If Scenario Simulator
-              </h3>
+              <span className="h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-emerald-400/20"></span>
+              <span className="label-tactical">WHAT-IF OPERATIONAL SCENARIO SIMULATOR</span>
             </div>
             <p className="text-xs text-[var(--text-secondary)] mt-0.5">
               Dynamically manipulate hydrometeorological parameters to test operational mitigation thresholds
@@ -264,20 +274,20 @@ export default function ImpactMode({ eventData }) {
           <button
             type="button"
             onClick={handleReset}
-            className="cursor-pointer px-3 py-1 text-xs rounded border border-[var(--border)] bg-[var(--card-elevated)] text-[var(--text-secondary)] hover:text-white shrink-0"
+            className="cursor-pointer px-3 py-1.5 text-xs rounded border border-[var(--border)] bg-[var(--card-elevated)] text-[var(--text-secondary)] hover:text-white hover:border-slate-400 transition-all shrink-0 font-mono"
           >
-            Reset to Baseline
+            ↺ RESET BASELINE
           </button>
         </div>
 
         {/* Sliders Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
           {/* Slider 1: Rainfall Modifier */}
-          <div className="p-3.5 rounded bg-[var(--card-elevated)] border border-[var(--border)] space-y-2">
+          <div className="p-3.5 rounded panel-elevated space-y-2.5">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-primary)] font-medium">Rainfall Intensity</span>
-              <span className="font-telemetry font-bold text-sky-300">
+              <span className="text-[var(--text-primary)] font-medium">Rainfall Intensity Multiplier</span>
+              <span className="font-telemetry font-bold text-sky-300 text-sm">
                 {rainModifier > 0 ? `+${rainModifier}%` : `${rainModifier}%`}
               </span>
             </div>
@@ -290,7 +300,7 @@ export default function ImpactMode({ eventData }) {
               onChange={(e) => setRainModifier(Number(e.target.value))}
               className="w-full cursor-pointer accent-sky-400"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-telemetry">
+            <div className="flex justify-between text-[10px] text-slate-400 font-telemetry">
               <span>-50% (Subsiding)</span>
               <span>0% (Current)</span>
               <span>+100% (Deluge)</span>
@@ -298,10 +308,10 @@ export default function ImpactMode({ eventData }) {
           </div>
 
           {/* Slider 2: Drainage Capacity */}
-          <div className="p-3.5 rounded bg-[var(--card-elevated)] border border-[var(--border)] space-y-2">
+          <div className="p-3.5 rounded panel-elevated space-y-2.5">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-primary)] font-medium">Canal Desilt / Pump Rate</span>
-              <span className="font-telemetry font-bold text-emerald-300">
+              <span className="text-[var(--text-primary)] font-medium">Canal Desilt / Dewater Rate</span>
+              <span className="font-telemetry font-bold text-emerald-300 text-sm">
                 {drainageCapacity}%
               </span>
             </div>
@@ -314,7 +324,7 @@ export default function ImpactMode({ eventData }) {
               onChange={(e) => setDrainageCapacity(Number(e.target.value))}
               className="w-full cursor-pointer accent-emerald-400"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-telemetry">
+            <div className="flex justify-between text-[10px] text-slate-400 font-telemetry">
               <span>20% (Choked)</span>
               <span>60% (Nominal)</span>
               <span>100% (Max Pumped)</span>
@@ -322,10 +332,10 @@ export default function ImpactMode({ eventData }) {
           </div>
 
           {/* Slider 3: High-Tide Level */}
-          <div className="p-3.5 rounded bg-[var(--card-elevated)] border border-[var(--border)] space-y-2">
+          <div className="p-3.5 rounded panel-elevated space-y-2.5">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[var(--text-primary)] font-medium">High Tide / Surge Height</span>
-              <span className="font-telemetry font-bold text-amber-300">
+              <span className="text-[var(--text-primary)] font-medium">High Tide / Surge Elevation</span>
+              <span className="font-telemetry font-bold text-amber-300 text-sm">
                 {tideLevel.toFixed(1)}m
               </span>
             </div>
@@ -338,7 +348,7 @@ export default function ImpactMode({ eventData }) {
               onChange={(e) => setTideLevel(Number(e.target.value))}
               className="w-full cursor-pointer accent-amber-400"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-telemetry">
+            <div className="flex justify-between text-[10px] text-slate-400 font-telemetry">
               <span>0.0m (Low Tide)</span>
               <span>0.8m (Mean)</span>
               <span>2.5m (Storm Surge)</span>
@@ -348,52 +358,52 @@ export default function ImpactMode({ eventData }) {
         </div>
 
         {/* Live Simulation Outcomes Bar */}
-        <div className="p-4 rounded-lg bg-[var(--card-elevated)] border border-[var(--border)] flex flex-wrap items-center justify-between gap-4">
+        <div className="p-4 rounded-lg panel-elevated flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <div className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider">
-              Simulated Inundation Outcome
+            <div className="label-tactical text-[10px]">
+              SIMULATED INUNDATION OUTCOME
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xl font-bold font-telemetry text-rose-400">
+              <span className="text-2xl font-extrabold font-telemetry text-rose-400">
                 {simulatedDepth}
               </span>
-              <span className="text-xs text-[var(--text-secondary)]">
+              <span className="text-xs text-[var(--text-secondary)] font-mono">
                 (Prob: {(simulatedProb * 100).toFixed(0)}%)
               </span>
             </div>
           </div>
 
           <div className="space-y-0.5">
-            <div className="text-[11px] text-[var(--text-secondary)] uppercase tracking-wider">
-              Simulated Exposed Population
+            <div className="label-tactical text-[10px]">
+              SIMULATED EXPOSED POPULATION
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold font-telemetry text-[var(--text-primary)]">
+              <span className="text-2xl font-extrabold font-telemetry text-[var(--text-primary)]">
                 {simulatedPop.toLocaleString()}
               </span>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded font-mono ${
                 popDelta > 0
-                  ? "bg-rose-950 text-rose-300 border border-rose-600"
+                  ? "bg-rose-950/80 text-rose-300 border border-rose-500/50"
                   : popDelta < 0
-                  ? "bg-emerald-950 text-emerald-300 border border-emerald-600"
-                  : "bg-slate-800 text-slate-400"
+                  ? "bg-emerald-950/80 text-emerald-300 border border-emerald-500/50"
+                  : "bg-slate-800 text-slate-400 border border-slate-700"
               }`}>
                 {popDelta > 0 ? `+${popDelta.toLocaleString()} exposed` : popDelta < 0 ? `${popDelta.toLocaleString()} safeguarded` : "Baseline match"}
               </span>
             </div>
           </div>
 
-          <div className="text-xs text-[var(--text-secondary)] max-w-xs">
+          <div className="text-xs text-[var(--text-secondary)] max-w-sm">
             {drainageCapacity >= 80 && rainModifier <= 0 ? (
-              <span className="text-emerald-300">
-                ✓ Aggressive dewatering mitigates peak flood band below critical thresholds.
+              <span className="text-emerald-300 flex items-center gap-1.5 font-medium">
+                <span>✓</span> Aggressive dewatering mitigates peak flood band below critical thresholds.
               </span>
             ) : rainModifier > 40 || tideLevel > 1.5 ? (
-              <span className="text-rose-300">
-                ⚠️ Severe backflow overwhelmed local drainage. Mandatory evacuation indicated.
+              <span className="text-rose-300 flex items-center gap-1.5 font-medium">
+                <span>⚠️</span> Severe backflow overwhelmed local drainage. Mandatory evacuation indicated.
               </span>
             ) : (
-              <span>Nominal operational mitigation bounds maintained.</span>
+              <span className="text-slate-300">Nominal operational mitigation bounds maintained.</span>
             )}
           </div>
         </div>

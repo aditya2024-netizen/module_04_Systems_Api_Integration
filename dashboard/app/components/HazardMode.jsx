@@ -76,112 +76,127 @@ export default function HazardMode({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Precipitation Nowcast Card */}
-        <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between">
+        <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between shadow-sm">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
               <div className="flex items-center gap-2">
                 <span className="text-base">🌧️</span>
-                <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wide">
-                  Precipitation Nowcast
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-telemetry">
+                  Precipitation Nowcast Telemetry
                 </h4>
               </div>
-              <span className={`text-[11px] font-telemetry px-2 py-0.5 rounded ${
-                isOutageActive ? "bg-amber-950 border border-amber-600 text-amber-300" : "bg-[var(--card-elevated)] text-slate-300 border border-[var(--border)]"
+              <span className={`text-[11px] font-telemetry px-2.5 py-0.5 rounded font-bold ${
+                isOutageActive ? "bg-amber-950/80 border border-amber-500 text-amber-300" : "bg-sky-950/80 text-sky-300 border border-sky-500/50"
               }`}>
-                Conf: {(effectiveRainConfidence * 100).toFixed(0)}%
+                CONFIDENCE: {(effectiveRainConfidence * 100).toFixed(0)}%
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)]">
-                <div className="text-xs text-[var(--text-secondary)]">Instantaneous rate</div>
-                <div className="text-2xl font-bold text-[var(--text-primary)] font-telemetry mt-1">
-                  {currentRainRate}{" "}
-                  <span className="text-xs font-normal text-[var(--text-secondary)]">mm/hr</span>
+              <div className="bg-[var(--card-elevated)] p-3.5 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] font-bold text-slate-400 font-telemetry uppercase">Instantaneous Rate</div>
+                <div className="text-3xl font-bold text-white font-telemetry mt-1 flex items-baseline gap-1">
+                  <span>{currentRainRate}</span>
+                  <span className="text-xs font-normal text-slate-400 font-telemetry">mm/hr</span>
                 </div>
+                <span className="text-[10px] font-telemetry text-sky-400 mt-1 inline-block">
+                  {currentRainRate > 50 ? "Convective Storm Cell" : "Stratiform Telemetry"}
+                </span>
               </div>
 
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)]">
-                <div className="text-xs text-[var(--text-secondary)]">Total accumulation</div>
-                <div className="text-2xl font-bold text-[var(--text-primary)] font-telemetry mt-1">
-                  {rain.rainfall_accumulation_mm}{" "}
-                  <span className="text-xs font-normal text-[var(--text-secondary)]">mm</span>
+              <div className="bg-[var(--card-elevated)] p-3.5 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] font-bold text-slate-400 font-telemetry uppercase">Total Accumulation</div>
+                <div className="text-3xl font-bold text-white font-telemetry mt-1 flex items-baseline gap-1">
+                  <span>{rain.rainfall_accumulation_mm}</span>
+                  <span className="text-xs font-normal text-slate-400 font-telemetry">mm</span>
                 </div>
+                <span className="text-[10px] font-telemetry text-slate-400 mt-1 inline-block">
+                  Duration Horizon: {rain.lead_minutes}m
+                </span>
               </div>
             </div>
 
-            <div className="mt-4 space-y-2 text-xs font-telemetry text-[var(--text-secondary)]">
-              <div className="flex justify-between py-1 border-b border-[var(--border)]/60">
-                <span>Forecast lead horizon:</span>
-                <span className="text-[var(--text-primary)] font-semibold">{rain.lead_minutes} min</span>
+            <div className="mt-4 p-3 rounded-lg bg-[var(--canvas)] border border-[var(--border)]/70 space-y-2 text-xs font-telemetry">
+              <div className="flex justify-between py-0.5 border-b border-[var(--border)]/50">
+                <span className="text-slate-400">Forecast lead horizon:</span>
+                <span className="text-white font-bold">{rain.lead_minutes} min</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--border)]/60">
-                <span>Nowcast sensor source:</span>
-                <span className="text-sky-400 font-mono">{effectiveSource}</span>
+              <div className="flex justify-between py-0.5 border-b border-[var(--border)]/50">
+                <span className="text-slate-400">Nowcast sensor source:</span>
+                <span className="text-sky-300 font-bold font-mono">{effectiveSource}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span>Telemetry valid timestamp:</span>
-                <span className="text-[var(--text-primary)]">{rain.valid_time}</span>
+              <div className="flex justify-between py-0.5">
+                <span className="text-slate-400">Telemetry valid timestamp:</span>
+                <span className="text-slate-200">{rain.valid_time}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[11px] text-[var(--text-secondary)]">
-            Sensor stream mapped to Chennai Catchment Adyar Basin
+          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[10px] font-telemetry text-slate-400 flex items-center justify-between">
+            <span>SENSOR STREAM: CHENNAI ADYAR RADAR GRID</span>
+            <span className="text-emerald-400 font-semibold">SYNCHRONIZED</span>
           </div>
         </div>
 
         {/* Hydrodynamic Inundation Telemetry */}
-        <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between">
+        <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between shadow-sm">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
               <div className="flex items-center gap-2">
                 <span className="text-base">🌊</span>
-                <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wide">
-                  Hydrodynamic Inundation
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-telemetry">
+                  Hydrodynamic Inundation Telemetry
                 </h4>
               </div>
-              <span className={`text-[11px] font-telemetry px-2 py-0.5 rounded ${
-                isOutageActive ? "bg-amber-950 border border-amber-600 text-amber-300" : "bg-[var(--card-elevated)] text-slate-300 border border-[var(--border)]"
+              <span className={`text-[11px] font-telemetry px-2.5 py-0.5 rounded font-bold ${
+                isOutageActive ? "bg-amber-950/80 border border-amber-500 text-amber-300" : "bg-sky-950/80 text-sky-300 border border-sky-500/50"
               }`}>
-                Conf: {(effectiveInunConfidence * 100).toFixed(0)}%
+                CONFIDENCE: {(effectiveInunConfidence * 100).toFixed(0)}%
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)]">
-                <div className="text-xs text-[var(--text-secondary)]">Inundation probability</div>
-                <div className="text-2xl font-bold font-telemetry mt-1 text-rose-400">
-                  {((currentProb || 0) * 100).toFixed(0)}%
+              <div className="bg-[var(--card-elevated)] p-3.5 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] font-bold text-slate-400 font-telemetry uppercase">Inundation Probability</div>
+                <div className="text-3xl font-bold font-telemetry mt-1 text-rose-400 flex items-baseline gap-1">
+                  <span>{((currentProb || 0) * 100).toFixed(0)}%</span>
+                  <span className="text-xs font-normal text-rose-300/80 font-telemetry">RISK</span>
                 </div>
+                <span className="text-[10px] font-telemetry text-rose-300 mt-1 inline-block">
+                  {currentProb >= 0.7 ? "Critical Overflow Projected" : "Moderate Runoff"}
+                </span>
               </div>
 
-              <div className="bg-[var(--card-elevated)] p-3 rounded border border-[var(--border)]">
-                <div className="text-xs text-[var(--text-secondary)]">Projected depth band</div>
-                <div className="text-2xl font-bold font-telemetry mt-1 text-amber-300">
-                  {currentDepthBand}
+              <div className="bg-[var(--card-elevated)] p-3.5 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] font-bold text-slate-400 font-telemetry uppercase">Projected Depth Band</div>
+                <div className="text-3xl font-bold font-telemetry mt-1 text-amber-300 flex items-baseline gap-1">
+                  <span>{currentDepthBand}</span>
                 </div>
+                <span className="text-[10px] font-telemetry text-amber-300 mt-1 inline-block">
+                  Peak Overland Water Depth
+                </span>
               </div>
             </div>
 
-            <div className="mt-4 space-y-2 text-xs font-telemetry text-[var(--text-secondary)]">
-              <div className="flex justify-between py-1 border-b border-[var(--border)]/60">
-                <span>Hydraulic model engine:</span>
-                <span className="text-[var(--text-primary)] font-semibold">2D Overland Shallow-Water (Replay)</span>
+            <div className="mt-4 p-3 rounded-lg bg-[var(--canvas)] border border-[var(--border)]/70 space-y-2 text-xs font-telemetry">
+              <div className="flex justify-between py-0.5 border-b border-[var(--border)]/50">
+                <span className="text-slate-400">Hydraulic model engine:</span>
+                <span className="text-white font-bold">2D Overland Shallow-Water</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--border)]/60">
-                <span>Model state artifact:</span>
-                <span className="text-sky-400 font-mono truncate max-w-[200px]">{inun.risk_uri}</span>
+              <div className="flex justify-between py-0.5 border-b border-[var(--border)]/50">
+                <span className="text-slate-400">Model state artifact:</span>
+                <span className="text-sky-300 font-mono truncate max-w-[200px]">{inun.risk_uri}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span>Topographic mesh resolution:</span>
-                <span className="text-[var(--text-primary)]">5m DEM (Adyar Catchment)</span>
+              <div className="flex justify-between py-0.5">
+                <span className="text-slate-400">Topographic mesh resolution:</span>
+                <span className="text-slate-200">5m DEM (Adyar Catchment)</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[11px] text-[var(--text-secondary)]">
-            Depth bands: nominal (&lt;0.1m) · moderate (0.3–0.5m) · critical (0.5–1.0m+)
+          <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[10px] font-telemetry text-slate-400 flex items-center justify-between">
+            <span>DEPTH BANDS: &lt;0.1m · 0.3–0.5m · 0.5–1.0m+</span>
+            <span className="text-emerald-400 font-semibold">VALIDATED</span>
           </div>
         </div>
 

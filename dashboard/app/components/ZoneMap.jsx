@@ -283,63 +283,74 @@ export default function ZoneMap({
   }
 
   return (
-    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-3.5 sm:p-4 flex flex-col justify-between">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2.5 gap-2">
+    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[var(--border)] gap-2">
         <div>
-          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
-            Spatial nowcast and inundation map
-          </h2>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-            Chennai pilot catchment · Adyar Basin ward grid
+          <div className="flex items-center gap-2">
+            <span className="text-sky-400 font-telemetry text-sm">⌖</span>
+            <h2 className="text-xs sm:text-sm font-bold text-white tracking-wide uppercase font-telemetry">
+              Spatial Hydrodynamic &amp; Inundation GIS Grid
+            </h2>
+          </div>
+          <p className="text-[11px] text-[var(--text-secondary)] font-telemetry mt-0.5">
+            PROJECTION: WGS84 (EPSG:4326) · ADYAR CATCHMENT MESH (5m DEM) · CHENNAI PILOT
           </p>
         </div>
-        <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)] font-telemetry">
-          <span>{currentLat.toFixed(4)}° N, {currentLng.toFixed(4)}° E</span>
-          <span className="px-2 py-0.5 rounded bg-[var(--card-elevated)] text-[var(--text-primary)] border border-[var(--border)]">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-telemetry">
+          <span className="px-2.5 py-1 rounded bg-[var(--canvas)] border border-[var(--border)] text-slate-300">
+            LAT: <strong className="text-white">{currentLat.toFixed(4)}° N</strong> · LON: <strong className="text-white">{currentLng.toFixed(4)}° E</strong>
+          </span>
+          <span className="px-2.5 py-1 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50 font-bold uppercase text-[10px]">
             {currentAreaType}
           </span>
         </div>
       </div>
 
-      <div className="relative h-72 sm:h-80 md:h-96 w-full rounded-md overflow-hidden border border-[var(--border)] my-2">
+      <div className="relative h-72 sm:h-84 md:h-96 w-full rounded-lg overflow-hidden border border-[var(--border)] my-3 corner-accents">
         <div ref={mapContainerRef} className="h-full w-full z-0" />
+        <div className="absolute top-2.5 right-2.5 z-1000 px-2.5 py-1 rounded bg-[var(--card)]/90 backdrop-blur-sm border border-[var(--border)] text-[10px] font-telemetry text-slate-300 flex items-center gap-2 pointer-events-none shadow-md">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>SPATIAL MESH ACTIVE · ZONE: {currentZoneId}</span>
+        </div>
       </div>
 
-      {/* Map Legend */}
-      <div className="pt-2 flex flex-wrap items-center justify-between text-xs text-[var(--text-secondary)] gap-2">
+      {/* Map Tactical Legend */}
+      <div className="pt-2 flex flex-wrap items-center justify-between text-xs text-[var(--text-secondary)] gap-2 bg-[var(--canvas)] p-2.5 rounded-md border border-[var(--border)]/70">
         <div className="flex flex-wrap items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[var(--critical)]"></span>
-            <span>0.5–1.0m+ depth</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--critical)] shadow-sm shadow-rose-500/50"></span>
+            <span className="font-telemetry text-[11px] text-slate-200">0.5–1.0m+ Critical Inundation</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[var(--warning)]"></span>
-            <span>0.3–0.5m depth</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--warning)] shadow-sm shadow-amber-500/50"></span>
+            <span className="font-telemetry text-[11px] text-slate-200">0.3–0.5m Moderate Ponding</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[var(--safe)]"></span>
-            <span>&lt;0.1m depth</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--safe)] shadow-sm shadow-emerald-500/50"></span>
+            <span className="font-telemetry text-[11px] text-slate-200">&lt;0.1m Nominal Surface Runoff</span>
           </span>
           {activeMode === "response" && (
             <>
               <span className="flex items-center gap-1.5 font-semibold text-[var(--safe)]">
-                <span className="h-0.5 w-3 bg-[var(--safe)] inline-block"></span>
-                <span>Safe route</span>
+                <span className="h-1 w-3.5 bg-[var(--safe)] rounded inline-block"></span>
+                <span className="font-telemetry text-[11px]">Safe Bypass Corridor</span>
               </span>
               <span className="flex items-center gap-1.5 font-semibold text-[var(--critical)]">
                 <span className="h-2 w-2 rounded-full bg-[var(--critical)]"></span>
-                <span>Simulated choke</span>
+                <span className="font-telemetry text-[11px]">Roadway Choke Point</span>
               </span>
             </>
           )}
           {isRadarOutage && (
-            <span className="flex items-center gap-1.5 text-[var(--warning)] font-telemetry">
-              <span className="h-2 w-2 rounded-full border border-[var(--warning)]"></span>
-              <span>Degraded uncertainty envelope</span>
+            <span className="flex items-center gap-1.5 text-amber-300 font-telemetry text-[11px] border-l border-[var(--border)] pl-3">
+              <span className="h-2 w-2 rounded-full border border-amber-400 bg-amber-400/20"></span>
+              <span>Degraded Uncertainty Envelope (±35%)</span>
             </span>
           )}
         </div>
-        <span className="font-telemetry text-[11px]">Click zone marker to switch focus</span>
+        <span className="font-telemetry text-[10px] text-slate-400 tracking-wider uppercase">
+          Click zone marker to switch operational focus
+        </span>
       </div>
     </div>
   );

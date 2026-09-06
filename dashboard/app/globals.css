@@ -86,3 +86,59 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* Command Center Panel Utility Classes */
+.panel-technical {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.panel-technical:hover {
+  border-color: oklch(30% 0.02 230);
+}
+
+.panel-elevated {
+  background-color: var(--card-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+/* Tactical Corner Accents */
+.corner-accents {
+  position: relative;
+}
+.corner-accents::before,
+.corner-accents::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: var(--accent-cyan);
+  pointer-events: none;
+  opacity: 0.4;
+}
+.corner-accents::before {
+  top: 0;
+  left: 0;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.corner-accents::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+
+/* Micro Tactical Labels */
+.label-tactical {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}

@@ -256,26 +256,30 @@ export default function DashboardPage() {
         <header className="flex flex-col md:flex-row md:items-center md:justify-between pb-4 border-b border-[var(--border)] gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-              <span className="text-xs font-semibold tracking-wider text-rose-400 uppercase">
-                Flood Operations Command
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+              </span>
+              <span className="text-[11px] font-bold tracking-widest text-rose-400 uppercase font-telemetry">
+                Flood Operations Command &amp; Mission Intelligence
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">
               HydroSurge AI — Incident Decision Support
             </h1>
-            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-              Greater Chennai Corporation • Adyar Basin Emergency Management Grid
+            <p className="text-xs text-slate-400 font-telemetry mt-0.5">
+              SECTOR: GREATER CHENNAI · BASIN: ADYAR (PILOT) · EPSG:4326 · TNSDMA / GCC GRID
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
               onClick={() => setIsCapDrawerOpen(true)}
-              className="cursor-pointer px-3.5 py-1.5 text-xs font-bold rounded-md bg-[var(--critical)] text-white hover:brightness-110 shadow-sm transition-all"
+              className="cursor-pointer px-4 py-2 text-xs font-bold rounded-md bg-[var(--critical)] text-white hover:brightness-110 shadow-md shadow-rose-950/40 border border-rose-400/40 transition-all flex items-center gap-2 font-telemetry tracking-wide"
             >
-              🚨 Dispatch CAP / SACHET Alert
+              <span>🚨</span>
+              <span>DISPATCH CAP / SACHET ALERT</span>
             </button>
           </div>
         </header>
@@ -288,72 +292,128 @@ export default function DashboardPage() {
         />
 
         {/* Focus Incident Selector Navigation (Loaded dynamically from GET /api/v1/events) */}
-        <nav aria-label="Incident focus selector" className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-[var(--text-secondary)] mr-1">
-            Catchment Focus:
+        <nav aria-label="Incident focus selector" className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-[var(--card)] border border-[var(--border)]">
+          <span className="text-[11px] font-bold text-slate-400 font-telemetry uppercase tracking-wider px-2">
+            Target Focus:
           </span>
           {eventsList.map((ev) => {
             const isSelected = selectedEventId === ev.event_id;
+            let priorityDot = "bg-slate-500";
+            if (ev.priority === "CRITICAL") priorityDot = "bg-rose-500";
+            else if (ev.priority === "HIGH") priorityDot = "bg-amber-500";
+            else if (ev.priority === "MEDIUM") priorityDot = "bg-yellow-500";
+            else if (ev.priority === "LOW") priorityDot = "bg-emerald-500";
+
             return (
               <button
                 key={ev.event_id}
                 type="button"
                 onClick={() => setSelectedEventId(ev.event_id)}
-                className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-all active:scale-[0.98] ${
+                className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-all active:scale-[0.98] flex items-center gap-2 ${
                   isSelected
-                    ? "bg-sky-950/80 text-white border border-sky-500/70 shadow-sm font-semibold"
-                    : "bg-[var(--card)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--card-elevated)] hover:text-slate-200"
+                    ? "bg-sky-950/90 text-white border border-sky-400 shadow-md shadow-sky-950/40 font-semibold ring-1 ring-sky-500/40"
+                    : "bg-[var(--card-elevated)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--card-hover)] hover:text-white"
                 }`}
               >
-                <span>{ev.event_id}</span> · {ev.zone_name || ev.zone_id}
+                <span className={`h-1.5 w-1.5 rounded-full ${priorityDot}`}></span>
+                <span className="font-telemetry font-bold text-sky-300">{ev.event_id}</span>
+                <span className="text-slate-200">{ev.zone_name || ev.zone_id}</span>
+                <span className="text-[10px] text-slate-400 font-telemetry">({ev.zone_id})</span>
               </button>
             );
           })}
           {eventLoading && (
             <span className="text-[11px] font-telemetry text-sky-400 animate-pulse ml-2">
-              Syncing event...
+              Syncing telemetry...
             </span>
           )}
         </nav>
 
-        {/* Priority Command Alert Banner */}
+        {/* Priority Command Alert Banner — Dataminr & Palantir AI Decision Architecture */}
         <section className={`rounded-xl p-4 sm:p-5 transition-all ${currentTheme.banner}`}>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5">
-                <span className={`px-2.5 py-0.5 rounded text-xs tracking-wider uppercase ${currentTheme.badge}`}>
-                  {eventData?.priority}
-                </span>
+          <div className="flex flex-col gap-4">
+            
+            {/* Top row: Alert Priority, Title, and Location */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-[var(--border)]/70">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className={`px-2.5 py-0.5 rounded text-xs font-bold tracking-wider uppercase font-telemetry ${currentTheme.badge}`}>
+                    {eventData?.priority}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-400 font-telemetry uppercase tracking-wider">
+                    AI SITUATIONAL ASSESSMENT
+                  </span>
+                </div>
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                   {currentTheme.headline}
                 </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-300">
-                Primary impact zone: <strong className="text-white">{activeLoc.zone_name}</strong> ({activeLoc.zone_id}) — {activeLoc.flood_area_type} topography
-              </p>
-            </div>
-
-            {/* Telemetry Strip */}
-            <div className="flex flex-wrap items-center gap-3 text-xs pt-2 lg:pt-0 border-t lg:border-t-0 border-[var(--border)]">
-              <div className="bg-[var(--canvas)] px-3 py-1.5 rounded border border-[var(--border)]">
-                <div className="text-[var(--text-secondary)]">Model Confidence</div>
-                <div className="text-sm font-bold font-telemetry text-slate-100 mt-0.5">
-                  {((eventData?.confidence ?? 0.8) * 100).toFixed(0)}%
+                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300 font-telemetry">
+                  <span>Catchment: <strong className="text-white">{activeLoc.zone_name}</strong> ({activeLoc.zone_id})</span>
+                  <span className="text-slate-500">|</span>
+                  <span>Terrain: <strong className="text-sky-300">{activeLoc.flood_area_type}</strong></span>
+                  <span className="text-slate-500">|</span>
+                  <span>City: <strong className="text-white">{activeLoc.city || "Chennai"}</strong></span>
                 </div>
               </div>
-              <div className="bg-[var(--canvas)] px-3 py-1.5 rounded border border-[var(--border)]">
-                <div className="text-[var(--text-secondary)]">Forecast Lead</div>
-                <div className="text-sm font-bold font-telemetry text-slate-100 mt-0.5">
+
+              {/* Recommended Response Protocol Checklist */}
+              <div className="flex flex-col gap-1.5 lg:items-end">
+                <span className="text-[10px] font-bold uppercase font-telemetry text-slate-400 tracking-wider">
+                  Recommended Response Protocols
+                </span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {(eventData?.actions || ["ALERT", "CLOSE_ROAD", "DEPLOY_TEAM"]).map((act) => (
+                    <span
+                      key={act}
+                      className="px-2.5 py-1 rounded bg-[var(--canvas)] border border-[var(--border)] text-xs font-telemetry font-bold text-sky-300 flex items-center gap-1 shadow-sm"
+                    >
+                      <span className="text-emerald-400">✓</span>
+                      <span>{act}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom row: Operational Telemetry Gauges */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs font-telemetry">
+              <div className="bg-[var(--canvas)] px-3 py-2 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] uppercase font-semibold text-slate-400">Model Confidence</div>
+                <div className="text-base font-bold text-white mt-0.5 flex items-center gap-1.5">
+                  <span>{((eventData?.confidence ?? 0.8) * 100).toFixed(0)}%</span>
+                  <span className="text-[10px] font-normal text-emerald-400">FUSED</span>
+                </div>
+              </div>
+
+              <div className="bg-[var(--canvas)] px-3 py-2 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] uppercase font-semibold text-slate-400">Forecast Lead</div>
+                <div className="text-base font-bold text-sky-300 mt-0.5">
                   {eventData?.rainfall?.lead_minutes || 60} min
                 </div>
               </div>
-              <div className="bg-[var(--canvas)] px-3 py-1.5 rounded border border-[var(--border)]">
-                <div className="text-[var(--text-secondary)]">Exposed Census</div>
-                <div className="text-sm font-bold font-telemetry text-rose-400 mt-0.5">
+
+              <div className="bg-[var(--canvas)] px-3 py-2 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] uppercase font-semibold text-slate-400">Exposed Census</div>
+                <div className="text-base font-bold text-rose-400 mt-0.5">
                   {(eventData?.impact?.population_exposed || 0).toLocaleString()}
                 </div>
               </div>
+
+              <div className="bg-[var(--canvas)] px-3 py-2 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] uppercase font-semibold text-slate-400">Critical Assets</div>
+                <div className="text-base font-bold text-amber-300 mt-0.5">
+                  {eventData?.impact?.critical_assets || 0} Facilities
+                </div>
+              </div>
+
+              <div className="bg-[var(--canvas)] px-3 py-2 rounded-lg border border-[var(--border)]">
+                <div className="text-[10px] uppercase font-semibold text-slate-400">Roadways At Risk</div>
+                <div className="text-base font-bold text-rose-300 mt-0.5">
+                  {eventData?.impact?.roads_affected || 0} Arterials
+                </div>
+              </div>
             </div>
+
           </div>
         </section>
 
