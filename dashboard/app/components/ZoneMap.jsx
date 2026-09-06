@@ -19,8 +19,15 @@ export default function ZoneMap({
   const routePolylineRef = useRef(null);
   const blockedMarkersRef = useRef([]);
 
-  const currentLat = activeLocation?.latitude || 12.9815;
-  const currentLng = activeLocation?.longitude || 80.2180;
+  const hasValidCoordinates =
+    activeLocation &&
+    typeof activeLocation.latitude === "number" &&
+    !isNaN(activeLocation.latitude) &&
+    typeof activeLocation.longitude === "number" &&
+    !isNaN(activeLocation.longitude);
+
+  const currentLat = hasValidCoordinates ? activeLocation.latitude : 12.9815;
+  const currentLng = hasValidCoordinates ? activeLocation.longitude : 80.2180;
   const currentZoneId = activeLocation?.zone_id || "Z42";
   const currentZoneName = activeLocation?.zone_name || currentZoneId;
   const currentAreaType = activeLocation?.flood_area_type || "Catchment Basin";
@@ -31,6 +38,8 @@ export default function ZoneMap({
 
     async function initMap() {
       if (!mapContainerRef.current || mapInstanceRef.current) return;
+      if (!hasValidCoordinates) return;
+
       const L = await import("leaflet");
 
       if (!isMounted || !mapContainerRef.current) return;
@@ -49,7 +58,7 @@ export default function ZoneMap({
 
       mapInstanceRef.current = map;
 
-      // Base Zone Markers from API zones list
+      // Render zones from API
       const zoneList = zones.length > 0 ? zones : [{
         zone_id: currentZoneId,
         zone_name: currentZoneName,
@@ -59,13 +68,11 @@ export default function ZoneMap({
       }];
 
       zoneList.forEach((z) => {
+        if (typeof z.latitude !== "number" || typeof z.longitude !== "number") return;
         const zId = z.zone_id;
-        const zLat = z.latitude || currentLat;
-        const zLng = z.longitude || currentLng;
-        const zName = z.zone_name || zId;
         const isSelected = zId === currentZoneId;
 
-        const marker = L.circleMarker([zLat, zLng], {
+        const marker = L.circleMarker([z.latitude, z.longitude], {
           radius: isSelected ? 11 : 7,
           color: isSelected ? "oklch(62% 0.22 25)" : "oklch(72% 0.12 215)",
           fillColor: isSelected ? "oklch(62% 0.22 25)" : "oklch(22% 0.015 230)",
@@ -75,8 +82,8 @@ export default function ZoneMap({
 
         marker.bindPopup(
           `<div style="font-size:12px; line-height:1.4;">
-            <strong style="color:#f1f5f9;">${zName} (${zId})</strong><br/>
-            <span style="color:#94a3b8;">Terrain: ${z.flood_area_type || "Adyar Catchment"}</span>
+            <strong style="color:#f1f5f9;">${z.zone_name || zId} (${zId})</strong><br/>
+            <span style="color:#94a3b8;">Terrain: ${z.flood_area_type || "Adyar Basin"}</span>
           </div>`
         );
 
@@ -97,28 +104,25 @@ export default function ZoneMap({
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [hasValidCoordinates]);
 
-  // Update Markers when zones change
+  // Update Markers when zones array updates
   useEffect(() => {
-    if (!mapInstanceRef.current || zones.length === 0) return;
+    if (!mapInstanceRef.current || zones.length === 0 || !hasValidCoordinates) return;
     const map = mapInstanceRef.current;
 
     import("leaflet").then((leafletModule) => {
       const L = leafletModule.default || leafletModule;
       
-      // Remove old markers
       Object.values(zoneMarkersRef.current).forEach((m) => map.removeLayer(m));
       zoneMarkersRef.current = {};
 
       zones.forEach((z) => {
+        if (typeof z.latitude !== "number" || typeof z.longitude !== "number") return;
         const zId = z.zone_id;
-        const zLat = z.latitude || currentLat;
-        const zLng = z.longitude || currentLng;
-        const zName = z.zone_name || zId;
         const isSelected = zId === currentZoneId;
 
-        const marker = L.circleMarker([zLat, zLng], {
+        const marker = L.circleMarker([z.latitude, z.longitude], {
           radius: isSelected ? 11 : 7,
           color: isSelected ? "oklch(62% 0.22 25)" : "oklch(72% 0.12 215)",
           fillColor: isSelected ? "oklch(62% 0.22 25)" : "oklch(22% 0.015 230)",
@@ -128,7 +132,7 @@ export default function ZoneMap({
 
         marker.bindPopup(
           `<div style="font-size:12px; line-height:1.4;">
-            <strong style="color:#f1f5f9;">${zName} (${zId})</strong><br/>
+            <strong style="color:#f1f5f9;">${z.zone_name || zId} (${zId})</strong><br/>
             <span style="color:#94a3b8;">Terrain: ${z.flood_area_type || "Adyar Basin"}</span>
           </div>`
         );
@@ -140,11 +144,11 @@ export default function ZoneMap({
         zoneMarkersRef.current[zId] = marker;
       });
     });
-  }, [zones]);
+  }, [zones, hasValidCoordinates]);
 
   // Update Center & Active Zone Pin
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstanceRef.current || !hasValidCoordinates) return;
     const map = mapInstanceRef.current;
     map.flyTo([currentLat, currentLng], 13, { duration: 0.6 });
 
@@ -160,11 +164,11 @@ export default function ZoneMap({
         marker.openPopup();
       }
     });
-  }, [currentLat, currentLng, currentZoneId]);
+  }, [currentLat, currentLng, currentZoneId, hasValidCoordinates]);
 
-  // Update Inundation Depth Halo according to Timeline Step
+  // Update Inundation Depth Halo
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstanceRef.current || !hasValidCoordinates) return;
     const map = mapInstanceRef.current;
 
     import("leaflet").then((leafletModule) => {
@@ -195,11 +199,11 @@ export default function ZoneMap({
         dashArray: "4 4",
       }).addTo(map);
     });
-  }, [currentLat, currentLng, activeTimelineStep]);
+  }, [currentLat, currentLng, activeTimelineStep, hasValidCoordinates]);
 
   // Update Radar Outage Uncertainty Visualization
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstanceRef.current || !hasValidCoordinates) return;
     const map = mapInstanceRef.current;
 
     import("leaflet").then((leafletModule) => {
@@ -220,9 +224,9 @@ export default function ZoneMap({
         }).addTo(map);
       }
     });
-  }, [isRadarOutage, currentLat, currentLng]);
+  }, [isRadarOutage, currentLat, currentLng, hasValidCoordinates]);
 
-  // Update Response Routing & Blocked Segments in Response Mode
+  // Update Response Routing in Response Mode
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
@@ -264,8 +268,22 @@ export default function ZoneMap({
     });
   }, [activeMode, responseRoute]);
 
+  if (!hasValidCoordinates) {
+    return (
+      <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-6 text-center space-y-2">
+        <div className="text-2xl text-amber-400">🗺️</div>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+          Spatial Geometry Unavailable
+        </h3>
+        <p className="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
+          The active incident payload did not provide centroid coordinates. In accordance with data honesty standards, geometry is not fabricated.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between">
+    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-3.5 sm:p-4 flex flex-col justify-between">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2.5 gap-2">
         <div>
           <h2 className="text-sm font-semibold text-[var(--text-primary)]">
@@ -283,7 +301,7 @@ export default function ZoneMap({
         </div>
       </div>
 
-      <div className="relative h-80 sm:h-96 w-full rounded-md overflow-hidden border border-[var(--border)] my-2">
+      <div className="relative h-72 sm:h-80 md:h-96 w-full rounded-md overflow-hidden border border-[var(--border)] my-2">
         <div ref={mapContainerRef} className="h-full w-full z-0" />
       </div>
 

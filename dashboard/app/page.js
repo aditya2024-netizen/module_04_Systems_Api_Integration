@@ -16,8 +16,10 @@ export default function DashboardPage() {
   const [eventData, setEventData] = useState(null);
   const [riskTiles, setRiskTiles] = useState([]);
   const [apiConnected, setApiConnected] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [eventLoading, setEventLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [notFoundEventId, setNotFoundEventId] = useState(null);
 
   // Dashboard Modes: "hazard" | "impact" | "response"
   const [activeMode, setActiveMode] = useState("hazard");
@@ -33,8 +35,9 @@ export default function DashboardPage() {
 
   // Initial Load: Events List, Risk Tiles, and Health
   async function loadInitialData() {
-    setLoading(true);
+    setInitialLoading(true);
     setErrorMessage(null);
+    setNotFoundEventId(null);
 
     try {
       // 1. Health check
@@ -61,14 +64,14 @@ export default function DashboardPage() {
       const ev = await fetchEvent(initialId, { simulateRadarOutage: isRadarOutage });
       setEventData(ev);
       setApiConnected(true);
-      setLoading(false);
+      setInitialLoading(false);
     } catch (err) {
-      console.error("API Gateway error:", err);
+      console.error("API Gateway error during initial load:", err);
       setApiConnected(false);
       setErrorMessage(
         "Unable to connect to HydroSurge API Gateway at http://127.0.0.1:8000. Ensure the FastAPI service is running."
       );
-      setLoading(false);
+      setInitialLoading(false);
     }
   }
 
@@ -78,23 +81,32 @@ export default function DashboardPage() {
 
   // Fetch Event when selectedEventId or isRadarOutage changes
   useEffect(() => {
-    if (!selectedEventId) return;
+    if (!selectedEventId || initialLoading) return;
 
     let isMounted = true;
+    setEventLoading(true);
+
     async function loadEvent() {
       try {
         const ev = await fetchEvent(selectedEventId, { simulateRadarOutage: isRadarOutage });
         if (isMounted) {
           setEventData(ev);
           setErrorMessage(null);
+          setNotFoundEventId(null);
           setApiConnected(true);
+          setEventLoading(false);
         }
       } catch (err) {
         console.error(`Failed to fetch event ${selectedEventId}:`, err);
         if (isMounted) {
-          setErrorMessage(
-            `Failed to load event ${selectedEventId} from API: ${err.message}`
-          );
+          if (err.message.includes("404")) {
+            setNotFoundEventId(selectedEventId);
+          } else {
+            setErrorMessage(
+              `Failed to load event ${selectedEventId} from API: ${err.message}`
+            );
+          }
+          setEventLoading(false);
         }
       }
     }
@@ -105,7 +117,7 @@ export default function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [selectedEventId, isRadarOutage]);
+  }, [selectedEventId, isRadarOutage, initialLoading]);
 
   const handleToggleRadarOutage = () => {
     setIsRadarOutage((prev) => !prev);
@@ -145,44 +157,70 @@ export default function DashboardPage() {
     },
   };
 
-  // Render Loading State
-  if (loading) {
+  // Render Initial Loading Skeleton
+  if (initialLoading) {
     return (
       <main className="min-h-screen bg-[var(--canvas)] text-[var(--text-primary)] flex items-center justify-center p-6">
-        <div className="text-center space-y-3">
-          <div className="h-8 w-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-medium text-slate-300">
-            Connecting to HydroSurge API Gateway...
-          </p>
-          <p className="text-xs text-slate-500 font-telemetry">
-            GET /api/v1/health &amp; /api/v1/events
-          </p>
+        <div className="max-w-md w-full text-center space-y-4">
+          <div className="h-10 w-10 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div>
+            <h2 className="text-base font-bold text-white">Connecting to HydroSurge API Gateway</h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Synchronizing with versioned FastAPI endpoints (health, events, spatial risk)...
+            </p>
+          </div>
+          <div className="p-2.5 rounded bg-[var(--card)] border border-[var(--border)] text-[11px] font-telemetry text-slate-500">
+            Target: http://127.0.0.1:8000/api/v1
+          </div>
         </div>
       </main>
     );
   }
 
-  // Render Hard API Error State (Refuses to load local fake data)
+  // Render API Offline Error State
   if (errorMessage && !eventData) {
     return (
       <main className="min-h-screen bg-[var(--canvas)] text-[var(--text-primary)] flex items-center justify-center p-6">
         <div className="max-w-md w-full rounded-xl bg-[var(--card)] border border-rose-600/60 p-6 space-y-4 shadow-2xl">
           <div className="flex items-center gap-3 text-rose-400">
             <span className="text-2xl">⚠️</span>
-            <h2 className="text-base font-bold text-white">API Connection Offline</h2>
+            <h2 className="text-base font-bold text-white">API Gateway Unavailable</h2>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
             {errorMessage}
           </p>
-          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)] text-[11px] font-telemetry text-slate-400">
-            Rule: The dashboard consumes data exclusively from the versioned FastAPI contract. Local offline fallback data has been intentionally disabled for integration integrity.
+          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)] text-[11px] font-telemetry text-slate-400 space-y-1">
+            <div className="font-semibold text-slate-300">Data Integrity Invariant:</div>
+            <div>The dashboard consumes domain data strictly via the FastAPI contract. Local mock fallback in the frontend is disabled to prevent unverified drift.</div>
           </div>
           <button
             type="button"
             onClick={loadInitialData}
-            className="w-full cursor-pointer py-2 px-4 rounded-md bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition-colors"
+            className="w-full cursor-pointer py-2.5 px-4 rounded-md bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition-colors"
           >
             Retry Connection
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // Render Event Not Found (404) State
+  if (notFoundEventId && !eventData) {
+    return (
+      <main className="min-h-screen bg-[var(--canvas)] text-[var(--text-primary)] flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-xl bg-[var(--card)] border border-amber-600/60 p-6 space-y-4 shadow-2xl text-center">
+          <div className="text-3xl text-amber-400">🔍</div>
+          <h2 className="text-base font-bold text-white">Event Not Found (404)</h2>
+          <p className="text-xs text-slate-300">
+            Event <code className="font-telemetry text-amber-300">{notFoundEventId}</code> was not found in the current scenario replay catalog.
+          </p>
+          <button
+            type="button"
+            onClick={() => setSelectedEventId(eventsList[0]?.event_id || "E001")}
+            className="cursor-pointer py-2 px-4 rounded-md bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition-colors"
+          >
+            Switch to First Available Event ({eventsList[0]?.event_id || "E001"})
           </button>
         </div>
       </main>
@@ -240,7 +278,7 @@ export default function DashboardPage() {
           isRadarOutage={Boolean(eventData?.radar_outage || isRadarOutage)}
         />
 
-        {/* Focus Incident Selector Navigation (Loaded from GET /api/v1/events) */}
+        {/* Focus Incident Selector Navigation (Loaded dynamically from GET /api/v1/events) */}
         <nav aria-label="Incident focus selector" className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-[var(--text-secondary)] mr-1">
             Catchment Focus:
@@ -254,14 +292,19 @@ export default function DashboardPage() {
                 onClick={() => setSelectedEventId(ev.event_id)}
                 className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-all active:scale-[0.98] ${
                   isSelected
-                    ? "bg-sky-950/80 text-white border border-sky-500/70 shadow-sm"
+                    ? "bg-sky-950/80 text-white border border-sky-500/70 shadow-sm font-semibold"
                     : "bg-[var(--card)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--card-elevated)] hover:text-slate-200"
                 }`}
               >
-                <span className="font-semibold">{ev.event_id}</span> · {ev.zone_name || ev.zone_id}
+                <span>{ev.event_id}</span> · {ev.zone_name || ev.zone_id}
               </button>
             );
           })}
+          {eventLoading && (
+            <span className="text-[11px] font-telemetry text-sky-400 animate-pulse ml-2">
+              Syncing event...
+            </span>
+          )}
         </nav>
 
         {/* Priority Command Alert Banner */}
@@ -324,8 +367,8 @@ export default function DashboardPage() {
         />
 
         {/* Operational Mode Navigation Tabs */}
-        <div className="border-b border-[var(--border)] pt-2">
-          <div className="flex items-center gap-2">
+        <div className="border-b border-[var(--border)] pt-2 overflow-x-auto">
+          <div className="flex items-center gap-2 min-w-max">
             <button
               type="button"
               onClick={() => setActiveMode("hazard")}
