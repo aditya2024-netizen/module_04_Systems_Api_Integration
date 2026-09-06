@@ -23,25 +23,33 @@ export default function ZoneMap({ selectedZoneId, onSelectZone }) {
         center: [activeZone.lat, activeZone.lng],
         zoom: 12,
         zoomControl: true,
+        scrollWheelZoom: false,
       });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 18,
       }).addTo(map);
 
       mapInstanceRef.current = map;
 
       Object.entries(ZONE_COORDINATES).forEach(([zId, zData]) => {
+        const isSelected = zId === selectedZoneId;
         const marker = L.circleMarker([zData.lat, zData.lng], {
-          radius: zId === selectedZoneId ? 14 : 8,
-          color: zId === selectedZoneId ? "#f43f5e" : "#0284c7",
-          fillColor: zId === selectedZoneId ? "#e11d48" : "#38bdf8",
+          radius: isSelected ? 12 : 7,
+          color: isSelected ? "#f43f5e" : "#38bdf8",
+          fillColor: isSelected ? "#e11d48" : "#0284c7",
           fillOpacity: 0.85,
-          weight: 2,
+          weight: isSelected ? 3 : 1.5,
         }).addTo(map);
 
-        marker.bindPopup(`<b>${zId} - ${zData.name}</b><br/>Area: ${zData.floodArea}`);
+        marker.bindPopup(
+          `<div style="font-size:12px; line-height:1.4;">
+            <strong style="color:#f1f5f9;">${zData.name} (${zId})</strong><br/>
+            <span style="color:#94a3b8;">Terrain: ${zData.floodArea}</span>
+          </div>`
+        );
+
         marker.on("click", () => {
           if (onSelectZone) onSelectZone(zId);
         });
@@ -65,15 +73,16 @@ export default function ZoneMap({ selectedZoneId, onSelectZone }) {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
     if (activeZone) {
-      map.flyTo([activeZone.lat, activeZone.lng], 13, { duration: 1.2 });
+      map.flyTo([activeZone.lat, activeZone.lng], 13, { duration: 0.8 });
     }
 
     Object.entries(markersRef.current).forEach(([zId, marker]) => {
       const isSelected = zId === selectedZoneId;
       marker.setStyle({
-        radius: isSelected ? 14 : 8,
-        color: isSelected ? "#f43f5e" : "#0284c7",
-        fillColor: isSelected ? "#e11d48" : "#38bdf8",
+        radius: isSelected ? 13 : 7,
+        color: isSelected ? "#f43f5e" : "#38bdf8",
+        fillColor: isSelected ? "#e11d48" : "#0284c7",
+        weight: isSelected ? 3 : 1.5,
       });
       if (isSelected) {
         marker.openPopup();
@@ -82,28 +91,40 @@ export default function ZoneMap({ selectedZoneId, onSelectZone }) {
   }, [selectedZoneId, activeZone]);
 
   return (
-    <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/40">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+    <div className="rounded-xl bg-[#0e1626] border border-[#1e2d4a]/70 p-5 flex flex-col justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 gap-2">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <span>🗺️</span> Real-time Interactive Leaflet GIS Map
+          <h2 className="text-sm font-semibold text-slate-200">
+            Spatial Inundation & Zone Map
           </h2>
-          <p className="text-xs text-slate-400">
-            Chennai Metropolitan Urban Basin (OpenStreetMap + Leaflet Engine)
+          <p className="text-xs text-slate-400 mt-0.5">
+            Real-time geospatial overlay for Greater Chennai Corporation basin
           </p>
         </div>
-        <span className="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-300">
-          {activeZone.lat}° N, {activeZone.lng}° E
-        </span>
+        <div className="flex items-center gap-3 text-xs text-slate-400 font-mono">
+          <span>{activeZone.lat.toFixed(4)}° N, {activeZone.lng.toFixed(4)}° E</span>
+          <span className="inline-block px-2 py-0.5 rounded bg-[#141e33] text-slate-300 border border-[#1e2d4a]">
+            {activeZone.floodArea}
+          </span>
+        </div>
       </div>
 
-      <div className="relative h-72 w-full rounded-xl overflow-hidden border border-slate-800">
+      <div className="relative h-80 sm:h-96 w-full rounded-lg overflow-hidden border border-[#1e2d4a]/50 my-2">
         <div ref={mapContainerRef} className="h-full w-full z-0" />
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
-        <span>Active Focus: <strong className="text-white">{activeZone.name}</strong></span>
-        <span>Topography: <strong className="text-cyan-400">{activeZone.floodArea}</strong></span>
+      <div className="pt-2 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-rose-500/30"></span>
+            <span className="text-slate-300">Active Alert Zone ({selectedZoneId})</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-sky-400"></span>
+            <span>Monitored Basins</span>
+          </span>
+        </div>
+        <span>Click any zone pin on the map to switch telemetry</span>
       </div>
     </div>
   );
