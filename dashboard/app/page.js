@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchEvents, fetchEvent, fetchRiskTiles, fetchHealth } from "./lib/api";
+import { fetchEvents, fetchEvent, fetchRiskTiles, fetchHealth, API_BASE_URL } from "./lib/api";
 import ZoneMap from "./components/ZoneMap";
 import StatusStrip from "./components/StatusStrip";
 import TimelineBar from "./components/TimelineBar";
@@ -68,7 +68,7 @@ export default function DashboardPage() {
       console.error("API Gateway error during initial load:", err);
       setApiConnected(false);
       setErrorMessage(
-        "Unable to connect to HydroSurge API Gateway at http://127.0.0.1:8000. Ensure the FastAPI service is running."
+        `Unable to connect to HydroSurge API Gateway at ${API_BASE_URL}. Ensure the FastAPI service is running.`
       );
     } finally {
       setInitialLoading(false);
@@ -179,7 +179,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="p-2.5 rounded bg-[var(--card)] border border-[var(--border)] text-[11px] font-telemetry text-slate-500">
-            Target: http://127.0.0.1:8000/api/v1
+            Target: {API_BASE_URL}
           </div>
         </div>
       </main>
