@@ -1,0 +1,14 @@
+{
+  "load_time_ms": 0.974,
+  "inference_time_ms": 0.005,
+  "map_generation_time_ms": 0.006,
+  "api_latency_p50_ms": 6.963,
+  "api_latency_p95_ms": 9.176,
+  "memory_peak_mb": 50.99,
+  "hardware": "Windows 11 (AMD64) | CPU: 12 logical cores | RAM: 15.6GB",
+  "batch_size": 1,
+  "cold_or_warm": "warm",
+  "sample_count": 100,
+  "measured_at": "2026-09-06T06:17:31.523491+00:00",
+  "note": "These are mock-provider service benchmarks, not real ML model inference times. Real model timing pending R&D-1/R&D-2."
+}

@@ -1,0 +1,301 @@
+{
+  "scenario_metadata": {
+    "scenario_id": "SCN-CHENNAI-2026",
+    "name": "Chennai Urban Flood Event Replay",
+    "region": "Greater Chennai Corporation (GCC)",
+    "valid_date": "2026-09-06",
+    "status": "PROTOTYPE"
+  },
+  "events": [
+    {
+      "event_id": "E001",
+      "location": {
+        "zone_id": "Z42"
+      },
+      "rainfall": {
+        "event_id": "E001",
+        "zone_id": "Z42",
+        "valid_time": "2026-09-06T09:00:00Z",
+        "lead_minutes": 60,
+        "rainfall_mm_hr": 87.0,
+        "rainfall_accumulation_mm": 124.0,
+        "confidence": 0.84,
+        "prediction_uri": "mock://rainfall/E001",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "inundation": {
+        "event_id": "E001",
+        "zone_id": "Z42",
+        "flood_probability": 0.87,
+        "depth_band": "0.5-1.0m",
+        "risk_uri": "mock://inundation/E001",
+        "confidence": 0.81,
+        "valid_time": "2026-09-06T09:00:00Z",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "confidence": 0.81,
+      "impact": {
+        "population_exposed": 21400,
+        "critical_assets": 3,
+        "roads_affected": 2
+      },
+      "priority": "CRITICAL",
+      "actions": [
+        "ALERT",
+        "CLOSE_ROAD",
+        "DEPLOY_TEAM"
+      ],
+      "data_source": "PRECOMPUTED_REPLAY",
+      "status": "PROTOTYPE",
+      "timeline": [
+        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 25.0, "rainfall_accumulation_mm": 25.0, "flood_probability": 0.20, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 55.0, "rainfall_accumulation_mm": 70.0, "flood_probability": 0.55, "depth_band": "0.3-0.5m" },
+        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 60, "rainfall_mm_hr": 87.0, "rainfall_accumulation_mm": 124.0, "flood_probability": 0.87, "depth_band": "0.5-1.0m" },
+        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 60.0, "rainfall_accumulation_mm": 160.0, "flood_probability": 0.82, "depth_band": "0.5-1.0m" },
+        { "timestamp": "2026-09-06T11:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 35.0, "rainfall_accumulation_mm": 185.0, "flood_probability": 0.65, "depth_band": "0.3-0.5m" }
+      ]
+    },
+    {
+      "event_id": "E002",
+      "location": {
+        "zone_id": "Z18"
+      },
+      "rainfall": {
+        "event_id": "E002",
+        "zone_id": "Z18",
+        "valid_time": "2026-09-06T09:00:00Z",
+        "lead_minutes": 60,
+        "rainfall_mm_hr": 65.0,
+        "rainfall_accumulation_mm": 88.0,
+        "confidence": 0.82,
+        "prediction_uri": "mock://rainfall/E002",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "inundation": {
+        "event_id": "E002",
+        "zone_id": "Z18",
+        "flood_probability": 0.76,
+        "depth_band": "0.3-0.5m",
+        "risk_uri": "mock://inundation/E002",
+        "confidence": 0.79,
+        "valid_time": "2026-09-06T09:00:00Z",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "confidence": 0.79,
+      "impact": {
+        "population_exposed": 14200,
+        "critical_assets": 2,
+        "roads_affected": 3
+      },
+      "priority": "HIGH",
+      "actions": [
+        "ALERT",
+        "PREPOSITION_PUMPS",
+        "MONITOR_CULVERTS"
+      ],
+      "data_source": "PRECOMPUTED_REPLAY",
+      "status": "PROTOTYPE",
+      "timeline": [
+        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 20.0, "rainfall_accumulation_mm": 20.0, "flood_probability": 0.15, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 45.0, "rainfall_accumulation_mm": 52.0, "flood_probability": 0.48, "depth_band": "0.1-0.3m" },
+        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 60, "rainfall_mm_hr": 65.0, "rainfall_accumulation_mm": 88.0, "flood_probability": 0.76, "depth_band": "0.3-0.5m" },
+        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 40.0, "rainfall_accumulation_mm": 115.0, "flood_probability": 0.68, "depth_band": "0.3-0.5m" },
+        { "timestamp": "2026-09-06T11:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 20.0, "rainfall_accumulation_mm": 130.0, "flood_probability": 0.50, "depth_band": "0.1-0.3m" }
+      ]
+    },
+    {
+      "event_id": "E003",
+      "location": {
+        "zone_id": "Z07"
+      },
+      "rainfall": {
+        "event_id": "E003",
+        "zone_id": "Z07",
+        "valid_time": "2026-09-06T09:00:00Z",
+        "lead_minutes": 45,
+        "rainfall_mm_hr": 52.0,
+        "rainfall_accumulation_mm": 64.0,
+        "confidence": 0.80,
+        "prediction_uri": "mock://rainfall/E003",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "inundation": {
+        "event_id": "E003",
+        "zone_id": "Z07",
+        "flood_probability": 0.62,
+        "depth_band": "0.1-0.3m",
+        "risk_uri": "mock://inundation/E003",
+        "confidence": 0.75,
+        "valid_time": "2026-09-06T09:00:00Z",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "confidence": 0.75,
+      "impact": {
+        "population_exposed": 35000,
+        "critical_assets": 5,
+        "roads_affected": 4
+      },
+      "priority": "HIGH",
+      "actions": [
+        "TRAFFIC_DIVERSION",
+        "CLEAR_STORM_DRAINS"
+      ],
+      "data_source": "PRECOMPUTED_REPLAY",
+      "status": "PROTOTYPE",
+      "timeline": [
+        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 15.0, "rainfall_accumulation_mm": 15.0, "flood_probability": 0.10, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 35.0, "rainfall_accumulation_mm": 40.0, "flood_probability": 0.40, "depth_band": "0.1-0.3m" },
+        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 45, "rainfall_mm_hr": 52.0, "rainfall_accumulation_mm": 64.0, "flood_probability": 0.62, "depth_band": "0.1-0.3m" },
+        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 30.0, "rainfall_accumulation_mm": 85.0, "flood_probability": 0.50, "depth_band": "0.1-0.3m" },
+        { "timestamp": "2026-09-06T11:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 10.0, "rainfall_accumulation_mm": 92.0, "flood_probability": 0.30, "depth_band": "<0.1m" }
+      ]
+    },
+    {
+      "event_id": "E004",
+      "location": {
+        "zone_id": "Z29"
+      },
+      "rainfall": {
+        "event_id": "E004",
+        "zone_id": "Z29",
+        "valid_time": "2026-09-06T09:00:00Z",
+        "lead_minutes": 90,
+        "rainfall_mm_hr": 38.0,
+        "rainfall_accumulation_mm": 45.0,
+        "confidence": 0.78,
+        "prediction_uri": "mock://rainfall/E004",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "inundation": {
+        "event_id": "E004",
+        "zone_id": "Z29",
+        "flood_probability": 0.44,
+        "depth_band": "<0.1m",
+        "risk_uri": "mock://inundation/E004",
+        "confidence": 0.73,
+        "valid_time": "2026-09-06T09:00:00Z",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "confidence": 0.73,
+      "impact": {
+        "population_exposed": 8500,
+        "critical_assets": 1,
+        "roads_affected": 1
+      },
+      "priority": "MEDIUM",
+      "actions": [
+        "ADVISORY_ISSUED",
+        "MONITOR_GAUGES"
+      ],
+      "data_source": "PRECOMPUTED_REPLAY",
+      "status": "PROTOTYPE",
+      "timeline": [
+        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 10.0, "rainfall_accumulation_mm": 10.0, "flood_probability": 0.05, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 25.0, "rainfall_accumulation_mm": 28.0, "flood_probability": 0.25, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 38.0, "rainfall_accumulation_mm": 45.0, "flood_probability": 0.44, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 20.0, "rainfall_accumulation_mm": 60.0, "flood_probability": 0.35, "depth_band": "<0.1m" }
+      ]
+    },
+    {
+      "event_id": "E005",
+      "location": {
+        "zone_id": "Z12"
+      },
+      "rainfall": {
+        "event_id": "E005",
+        "zone_id": "Z12",
+        "valid_time": "2026-09-06T09:00:00Z",
+        "lead_minutes": 120,
+        "rainfall_mm_hr": 22.0,
+        "rainfall_accumulation_mm": 28.0,
+        "confidence": 0.86,
+        "prediction_uri": "mock://rainfall/E005",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "inundation": {
+        "event_id": "E005",
+        "zone_id": "Z12",
+        "flood_probability": 0.18,
+        "depth_band": "<0.1m",
+        "risk_uri": "mock://inundation/E005",
+        "confidence": 0.80,
+        "valid_time": "2026-09-06T09:00:00Z",
+        "source": "mock",
+        "status": "PROTOTYPE"
+      },
+      "confidence": 0.80,
+      "impact": {
+        "population_exposed": 3200,
+        "critical_assets": 0,
+        "roads_affected": 0
+      },
+      "priority": "LOW",
+      "actions": [
+        "ROUTINE_MONITORING"
+      ],
+      "data_source": "PRECOMPUTED_REPLAY",
+      "status": "PROTOTYPE",
+      "timeline": [
+        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 8.0, "rainfall_accumulation_mm": 8.0, "flood_probability": 0.05, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 15.0, "rainfall_accumulation_mm": 18.0, "flood_probability": 0.10, "depth_band": "<0.1m" },
+        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 22.0, "rainfall_accumulation_mm": 28.0, "flood_probability": 0.18, "depth_band": "<0.1m" }
+      ]
+    }
+  ],
+  "risk_tiles": [
+    {
+      "tile_id": "tile_1024",
+      "zone_id": "Z42",
+      "timestamp": "2026-09-06T09:00:00Z",
+      "rainfall_mm_hr": 87.0,
+      "flood_probability": 0.87,
+      "depth_band": "0.5-1.0m",
+      "confidence": 0.81
+    },
+    {
+      "tile_id": "tile_1025",
+      "zone_id": "Z18",
+      "timestamp": "2026-09-06T09:00:00Z",
+      "rainfall_mm_hr": 65.0,
+      "flood_probability": 0.76,
+      "depth_band": "0.3-0.5m",
+      "confidence": 0.79
+    },
+    {
+      "tile_id": "tile_1026",
+      "zone_id": "Z07",
+      "timestamp": "2026-09-06T09:00:00Z",
+      "rainfall_mm_hr": 52.0,
+      "flood_probability": 0.62,
+      "depth_band": "0.1-0.3m",
+      "confidence": 0.75
+    },
+    {
+      "tile_id": "tile_1027",
+      "zone_id": "Z29",
+      "timestamp": "2026-09-06T09:00:00Z",
+      "rainfall_mm_hr": 38.0,
+      "flood_probability": 0.44,
+      "depth_band": "<0.1m",
+      "confidence": 0.73
+    },
+    {
+      "tile_id": "tile_1028",
+      "zone_id": "Z12",
+      "timestamp": "2026-09-06T09:00:00Z",
+      "rainfall_mm_hr": 22.0,
+      "flood_probability": 0.18,
+      "depth_band": "<0.1m",
+      "confidence": 0.80
+    }
+  ]
+}
