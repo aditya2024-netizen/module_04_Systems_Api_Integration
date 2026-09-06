@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ZONE_COORDINATES } from "../data/fallback";
 
 export default function ZoneMap({
-  selectedZoneId,
+  activeLocation,
+  zones = [],
   onSelectZone,
   activeTimelineStep,
   isRadarOutage,
-  activeIncident,
+  responseRoute,
   activeMode,
 }) {
   const mapContainerRef = useRef(null);
@@ -19,7 +19,11 @@ export default function ZoneMap({
   const routePolylineRef = useRef(null);
   const blockedMarkersRef = useRef([]);
 
-  const activeZone = ZONE_COORDINATES[selectedZoneId] || ZONE_COORDINATES.Z42;
+  const currentLat = activeLocation?.latitude || 12.9815;
+  const currentLng = activeLocation?.longitude || 80.2180;
+  const currentZoneId = activeLocation?.zone_id || "Z42";
+  const currentZoneName = activeLocation?.zone_name || currentZoneId;
+  const currentAreaType = activeLocation?.flood_area_type || "Catchment Basin";
 
   // Initialize Map
   useEffect(() => {
@@ -32,34 +36,47 @@ export default function ZoneMap({
       if (!isMounted || !mapContainerRef.current) return;
 
       const map = L.map(mapContainerRef.current, {
-        center: [activeZone.lat, activeZone.lng],
+        center: [currentLat, currentLng],
         zoom: 12,
         zoomControl: true,
         scrollWheelZoom: false,
       });
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap contributors',
+        attribution: "&copy; OpenStreetMap contributors",
         maxZoom: 18,
       }).addTo(map);
 
       mapInstanceRef.current = map;
 
-      // Base Zone Markers
-      Object.entries(ZONE_COORDINATES).forEach(([zId, zData]) => {
-        const marker = L.circleMarker([zData.lat, zData.lng], {
-          radius: zId === selectedZoneId ? 11 : 7,
-          color: zId === selectedZoneId ? "oklch(62% 0.22 25)" : "oklch(72% 0.12 215)",
-          fillColor: zId === selectedZoneId ? "oklch(62% 0.22 25)" : "oklch(22% 0.015 230)",
+      // Base Zone Markers from API zones list
+      const zoneList = zones.length > 0 ? zones : [{
+        zone_id: currentZoneId,
+        zone_name: currentZoneName,
+        latitude: currentLat,
+        longitude: currentLng,
+        flood_area_type: currentAreaType,
+      }];
+
+      zoneList.forEach((z) => {
+        const zId = z.zone_id;
+        const zLat = z.latitude || currentLat;
+        const zLng = z.longitude || currentLng;
+        const zName = z.zone_name || zId;
+        const isSelected = zId === currentZoneId;
+
+        const marker = L.circleMarker([zLat, zLng], {
+          radius: isSelected ? 11 : 7,
+          color: isSelected ? "oklch(62% 0.22 25)" : "oklch(72% 0.12 215)",
+          fillColor: isSelected ? "oklch(62% 0.22 25)" : "oklch(22% 0.015 230)",
           fillOpacity: 0.9,
-          weight: zId === selectedZoneId ? 3 : 1.5,
+          weight: isSelected ? 3 : 1.5,
         }).addTo(map);
 
         marker.bindPopup(
           `<div style="font-size:12px; line-height:1.4;">
-            <strong style="color:#f1f5f9;">${zData.name} (${zId})</strong><br/>
-            <span style="color:#94a3b8;">Terrain: ${zData.floodArea}</span><br/>
-            <span style="color:#94a3b8;">Population: ${zData.population.toLocaleString()}</span>
+            <strong style="color:#f1f5f9;">${zName} (${zId})</strong><br/>
+            <span style="color:#94a3b8;">Terrain: ${z.flood_area_type || "Adyar Catchment"}</span>
           </div>`
         );
 
@@ -82,16 +99,57 @@ export default function ZoneMap({
     };
   }, []);
 
+  // Update Markers when zones change
+  useEffect(() => {
+    if (!mapInstanceRef.current || zones.length === 0) return;
+    const map = mapInstanceRef.current;
+
+    import("leaflet").then((leafletModule) => {
+      const L = leafletModule.default || leafletModule;
+      
+      // Remove old markers
+      Object.values(zoneMarkersRef.current).forEach((m) => map.removeLayer(m));
+      zoneMarkersRef.current = {};
+
+      zones.forEach((z) => {
+        const zId = z.zone_id;
+        const zLat = z.latitude || currentLat;
+        const zLng = z.longitude || currentLng;
+        const zName = z.zone_name || zId;
+        const isSelected = zId === currentZoneId;
+
+        const marker = L.circleMarker([zLat, zLng], {
+          radius: isSelected ? 11 : 7,
+          color: isSelected ? "oklch(62% 0.22 25)" : "oklch(72% 0.12 215)",
+          fillColor: isSelected ? "oklch(62% 0.22 25)" : "oklch(22% 0.015 230)",
+          fillOpacity: 0.9,
+          weight: isSelected ? 3 : 1.5,
+        }).addTo(map);
+
+        marker.bindPopup(
+          `<div style="font-size:12px; line-height:1.4;">
+            <strong style="color:#f1f5f9;">${zName} (${zId})</strong><br/>
+            <span style="color:#94a3b8;">Terrain: ${z.flood_area_type || "Adyar Basin"}</span>
+          </div>`
+        );
+
+        marker.on("click", () => {
+          if (onSelectZone) onSelectZone(zId);
+        });
+
+        zoneMarkersRef.current[zId] = marker;
+      });
+    });
+  }, [zones]);
+
   // Update Center & Active Zone Pin
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
-    if (activeZone) {
-      map.flyTo([activeZone.lat, activeZone.lng], 13, { duration: 0.6 });
-    }
+    map.flyTo([currentLat, currentLng], 13, { duration: 0.6 });
 
     Object.entries(zoneMarkersRef.current).forEach(([zId, marker]) => {
-      const isSelected = zId === selectedZoneId;
+      const isSelected = zId === currentZoneId;
       marker.setStyle({
         radius: isSelected ? 12 : 7,
         color: isSelected ? "oklch(62% 0.22 25)" : "oklch(72% 0.12 215)",
@@ -102,13 +160,12 @@ export default function ZoneMap({
         marker.openPopup();
       }
     });
-  }, [selectedZoneId, activeZone]);
+  }, [currentLat, currentLng, currentZoneId]);
 
   // Update Inundation Depth Halo according to Timeline Step
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
-    const L = window.L || (mapInstanceRef.current && mapInstanceRef.current._leaflet_id ? window.L : null);
 
     import("leaflet").then((leafletModule) => {
       const L_inst = leafletModule.default || leafletModule;
@@ -129,7 +186,7 @@ export default function ZoneMap({
         haloColor = "oklch(69% 0.19 50)";
       }
 
-      depthCircleRef.current = L_inst.circle([activeZone.lat, activeZone.lng], {
+      depthCircleRef.current = L_inst.circle([currentLat, currentLng], {
         radius: haloRadius,
         color: haloColor,
         fillColor: haloColor,
@@ -138,7 +195,7 @@ export default function ZoneMap({
         dashArray: "4 4",
       }).addTo(map);
     });
-  }, [selectedZoneId, activeTimelineStep, activeZone]);
+  }, [currentLat, currentLng, activeTimelineStep]);
 
   // Update Radar Outage Uncertainty Visualization
   useEffect(() => {
@@ -153,7 +210,7 @@ export default function ZoneMap({
       }
 
       if (isRadarOutage) {
-        uncertaintyCircleRef.current = L_inst.circle([activeZone.lat, activeZone.lng], {
+        uncertaintyCircleRef.current = L_inst.circle([currentLat, currentLng], {
           radius: 2600,
           color: "oklch(69% 0.19 50)",
           fillColor: "oklch(69% 0.19 50)",
@@ -163,7 +220,7 @@ export default function ZoneMap({
         }).addTo(map);
       }
     });
-  }, [isRadarOutage, activeZone]);
+  }, [isRadarOutage, currentLat, currentLng]);
 
   // Update Response Routing & Blocked Segments in Response Mode
   useEffect(() => {
@@ -173,7 +230,6 @@ export default function ZoneMap({
     import("leaflet").then((leafletModule) => {
       const L_inst = leafletModule.default || leafletModule;
 
-      // Clean up previous route
       if (routePolylineRef.current) {
         map.removeLayer(routePolylineRef.current);
         routePolylineRef.current = null;
@@ -181,10 +237,9 @@ export default function ZoneMap({
       blockedMarkersRef.current.forEach((m) => map.removeLayer(m));
       blockedMarkersRef.current = [];
 
-      if (activeMode === "response" && activeIncident) {
-        // Draw Safe Evacuation Route
-        if (activeIncident.routeCoordinates && activeIncident.routeCoordinates.length > 0) {
-          routePolylineRef.current = L_inst.polyline(activeIncident.routeCoordinates, {
+      if (activeMode === "response" && responseRoute) {
+        if (responseRoute.route_coordinates && responseRoute.route_coordinates.length > 0) {
+          routePolylineRef.current = L_inst.polyline(responseRoute.route_coordinates, {
             color: "oklch(68% 0.16 142)",
             weight: 4,
             opacity: 0.9,
@@ -192,9 +247,8 @@ export default function ZoneMap({
           }).addTo(map);
         }
 
-        // Draw Blocked Road Points
-        if (activeIncident.blockedCoordinates) {
-          activeIncident.blockedCoordinates.forEach((pt) => {
+        if (responseRoute.blocked_coordinates) {
+          responseRoute.blocked_coordinates.forEach((pt) => {
             const blockedIcon = L_inst.circleMarker(pt, {
               radius: 9,
               color: "oklch(62% 0.22 25)",
@@ -202,13 +256,13 @@ export default function ZoneMap({
               fillOpacity: 0.9,
               weight: 2,
             }).addTo(map);
-            blockedIcon.bindPopup(`<b>IMPASSABLE ROAD CHOKE</b><br/>${activeIncident.impassableRoad}`);
+            blockedIcon.bindPopup(`<b>SIMULATED CHOKE POINT</b><br/>${responseRoute.impassable_road || "Road Inundated"}`);
             blockedMarkersRef.current.push(blockedIcon);
           });
         }
       }
     });
-  }, [activeMode, activeIncident]);
+  }, [activeMode, responseRoute]);
 
   return (
     <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col justify-between">
@@ -222,9 +276,9 @@ export default function ZoneMap({
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)] font-telemetry">
-          <span>{activeZone.lat.toFixed(4)}° N, {activeZone.lng.toFixed(4)}° E</span>
+          <span>{currentLat.toFixed(4)}° N, {currentLng.toFixed(4)}° E</span>
           <span className="px-2 py-0.5 rounded bg-[var(--card-elevated)] text-[var(--text-primary)] border border-[var(--border)]">
-            {activeZone.floodArea}
+            {currentAreaType}
           </span>
         </div>
       </div>
@@ -256,7 +310,7 @@ export default function ZoneMap({
               </span>
               <span className="flex items-center gap-1.5 font-semibold text-[var(--critical)]">
                 <span className="h-2 w-2 rounded-full bg-[var(--critical)]"></span>
-                <span>Blocked road</span>
+                <span>Simulated choke</span>
               </span>
             </>
           )}
@@ -267,7 +321,7 @@ export default function ZoneMap({
             </span>
           )}
         </div>
-        <span className="font-telemetry text-[11px]">Click zone marker to switch</span>
+        <span className="font-telemetry text-[11px]">Click zone marker to switch focus</span>
       </div>
     </div>
   );

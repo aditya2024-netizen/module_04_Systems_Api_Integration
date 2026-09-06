@@ -1,19 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { INCIDENTS } from "../data/fallback";
 
 export default function ResponseMode({
   eventData,
-  activeZone,
-  selectedIncidentId,
-  onSelectIncident,
+  availableEvents = [],
+  onSelectEvent,
   onOpenCapDrawer,
 }) {
   const [dispatchedActions, setDispatchedActions] = useState({});
   const [countdownSeconds, setCountdownSeconds] = useState(1185); // ~19m 45s
 
-  // Countdown timer effect
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdownSeconds((prev) => (prev > 0 ? prev - 1 : 0));
@@ -25,7 +22,19 @@ export default function ResponseMode({
   const seconds = countdownSeconds % 60;
   const timeFormatted = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
-  const activeIncident = INCIDENTS.find((i) => i.id === selectedIncidentId) || INCIDENTS[0];
+  const route = eventData?.response_route || {
+    incident_id: "INC-01",
+    title: "Critical Inundation Response",
+    lead_time: "T-20 min",
+    risk_score: 0.85,
+    impassable_road: "Low-Lying Roadway Segment",
+    safe_route: "Designated Arterial Elevated Bypass",
+    milestones: [
+      { time: "T-20 min", label: "Low-lying segments become impassable" },
+      { time: "T-35 min", label: "Overland flood surge reaches residential culverts" },
+      { time: "T-70 min", label: "Projected peak inundation depth" }
+    ]
+  };
 
   const handleToggleAction = (actionKey) => {
     setDispatchedActions((prev) => {
@@ -72,25 +81,25 @@ export default function ResponseMode({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[var(--border)] gap-2">
           <div>
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-              Active Operational Incidents Queue
+              Active Incident Response Queue (Prototype)
             </h3>
             <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-              Select incident to view localized choke points, safe routing, and dispatch protocols
+              Select incident focus to inspect simulated choke points, safe routing, and dispatch protocols
             </p>
           </div>
           <span className="text-xs font-telemetry px-2 py-0.5 rounded bg-[var(--card-elevated)] text-[var(--text-secondary)] border border-[var(--border)] shrink-0">
-            {INCIDENTS.length} incidents in active queue
+            {availableEvents.length} scenarios in queue
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          {INCIDENTS.map((inc) => {
-            const isSelected = inc.id === activeIncident.id;
+          {availableEvents.map((ev) => {
+            const isSelected = ev.event_id === eventData.event_id;
             return (
               <button
-                key={inc.id}
+                key={ev.event_id}
                 type="button"
-                onClick={() => onSelectIncident(inc.id)}
+                onClick={() => onSelectEvent(ev.event_id)}
                 className={`cursor-pointer p-3 rounded-lg text-left border transition-all ${
                   isSelected
                     ? "bg-rose-950/50 border-rose-500 text-white shadow-md shadow-rose-950/20"
@@ -98,19 +107,19 @@ export default function ResponseMode({
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-telemetry text-xs font-bold">{inc.id}</span>
+                  <span className="font-telemetry text-xs font-bold">{ev.event_id}</span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                    inc.priority === "CRITICAL" ? "bg-rose-600 text-white" : "bg-amber-600 text-white"
+                    ev.priority === "CRITICAL" ? "bg-rose-600 text-white" : ev.priority === "HIGH" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200"
                   }`}>
-                    {inc.priority}
+                    {ev.priority}
                   </span>
                 </div>
                 <div className="text-xs font-medium text-[var(--text-primary)] mt-1 truncate">
-                  {inc.title}
+                  {ev.zone_name || ev.zone_id}
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-400 font-telemetry mt-2">
-                  <span>Lead: {inc.leadTime}</span>
-                  <span>Risk: {inc.riskScore}</span>
+                  <span>Zone: {ev.zone_id}</span>
+                  <span>{isSelected ? "Active Focus" : "Select Focus"}</span>
                 </div>
               </button>
             );
@@ -132,7 +141,7 @@ export default function ResponseMode({
                 </h4>
               </div>
               <span className="text-[11px] font-telemetry text-rose-400">
-                Critical Window
+                Simulated Horizon
               </span>
             </div>
 
@@ -153,7 +162,7 @@ export default function ResponseMode({
                 Sequence of Impending Milestones:
               </div>
               <div className="space-y-1.5 font-telemetry text-xs">
-                {(activeIncident.milestones || []).map((ms, idx) => (
+                {(route.milestones || []).map((ms, idx) => (
                   <div key={idx} className="p-2 rounded bg-[var(--card-elevated)] border border-[var(--border)] flex items-center justify-between">
                     <span className="text-slate-300">{ms.label}</span>
                     <span className="text-rose-400 font-semibold shrink-0 ml-2">{ms.time}</span>
@@ -164,7 +173,7 @@ export default function ResponseMode({
           </div>
 
           <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[11px] text-[var(--text-secondary)]">
-            Derived from 2D hydro-accumulation speed profile
+            Derived from 2D hydro-accumulation speed profile (Replay Baseline)
           </div>
         </div>
 
@@ -175,11 +184,11 @@ export default function ResponseMode({
               <div className="flex items-center gap-2">
                 <span className="text-base">🧭</span>
                 <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wide">
-                  Evacuation Routing & Corridor Advisory
+                  Simulated Evacuation Corridor & Routing
                 </h4>
               </div>
               <span className="text-[11px] font-telemetry text-emerald-400">
-                GIS Corridor Plotted
+                Prototype Corridor
               </span>
             </div>
 
@@ -187,26 +196,26 @@ export default function ResponseMode({
               <div className="p-3.5 rounded bg-rose-950/30 border border-rose-800/50">
                 <div className="flex items-center gap-2 text-rose-300 text-xs font-bold uppercase">
                   <span className="h-2 w-2 rounded-full bg-rose-500"></span>
-                  <span>Blocked Choke Point</span>
+                  <span>Simulated Choke Point</span>
                 </div>
                 <div className="text-sm font-semibold text-white mt-1.5">
-                  {activeIncident.impassableRoad}
+                  {route.impassable_road}
                 </div>
                 <div className="text-xs text-rose-200/70 mt-1">
-                  Water level projected &gt;0.6m. Completely impassable for light vehicles and pedestrian traffic.
+                  Water level projected &gt;0.6m. Impassable for light vehicular traffic.
                 </div>
               </div>
 
               <div className="p-3.5 rounded bg-emerald-950/30 border border-emerald-800/50">
                 <div className="flex items-center gap-2 text-emerald-300 text-xs font-bold uppercase">
                   <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                  <span>Safe Recommended Route</span>
+                  <span>Safe Recommended Route (Simulated)</span>
                 </div>
                 <div className="text-sm font-semibold text-white mt-1.5">
-                  {activeIncident.safeRoute}
+                  {route.safe_route}
                 </div>
                 <div className="text-xs text-emerald-200/70 mt-1">
-                  Elevated bypass corridor confirmed clear of flood hazard. Emergency transit priority assigned.
+                  Elevated arterial bypass corridor clear of projected flood hazard envelope.
                 </div>
               </div>
             </div>
@@ -214,10 +223,10 @@ export default function ResponseMode({
             <div className="mt-4 p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="text-xs font-semibold text-[var(--text-primary)]">
-                  Emergency Broadcast Dispatch (CAP v1.2 / SACHET)
+                  CAP v1.2 / SACHET Emergency Alert Generator (Demo Payload)
                 </div>
                 <div className="text-xs text-[var(--text-secondary)]">
-                  Transmit structured XML alert to state disaster portal and public cell broadcast gateways
+                  Generate OASIS-compliant XML emergency alert payload for validation and handoff
                 </div>
               </div>
 
@@ -226,14 +235,14 @@ export default function ResponseMode({
                 onClick={onOpenCapDrawer}
                 className="cursor-pointer px-4 py-2 text-xs font-bold rounded-md bg-[var(--critical)] text-white hover:brightness-110 transition-all shrink-0 shadow-md shadow-rose-950/30"
               >
-                🚨 Generate CAP / SACHET XML Alert
+                🚨 Generate CAP Alert Payload
               </button>
             </div>
           </div>
 
           <div className="mt-4 pt-2.5 border-t border-[var(--border)] text-[11px] text-[var(--text-secondary)] flex justify-between items-center">
-            <span>Dynamic routing engine synced to GCC traffic police feed</span>
-            <span className="font-telemetry text-emerald-400">✓ Route open</span>
+            <span>Simulated routing scenario (Prototype demonstration)</span>
+            <span className="font-telemetry text-emerald-400">✓ Corridor available</span>
           </div>
         </div>
 
@@ -313,7 +322,7 @@ export default function ResponseMode({
         {Object.keys(dispatchedActions).length > 0 && (
           <div className="mt-4 p-2.5 rounded bg-emerald-950/40 border border-emerald-700/50 text-xs text-emerald-300 flex items-center justify-between">
             <span>{Object.keys(dispatchedActions).length} action protocol(s) active in command queue</span>
-            <span className="font-telemetry text-[11px]">Command state logged</span>
+            <span className="font-telemetry text-[11px]">Prototype dispatch recorded</span>
           </div>
         )}
       </div>

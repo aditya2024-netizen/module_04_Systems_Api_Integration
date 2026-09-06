@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 
-export default function ImpactMode({ eventData, activeZone }) {
-  const basePop = eventData?.impact?.population_exposed || activeZone?.population || 21400;
-  const baseAssets = eventData?.impact?.critical_assets ?? activeZone?.hospitals ?? 3;
+export default function ImpactMode({ eventData }) {
+  const basePop = eventData?.impact?.population_exposed || 21400;
+  const baseAssets = eventData?.impact?.critical_assets ?? 3;
   const baseRoads = eventData?.impact?.roads_affected ?? 2;
   const baseProb = eventData?.inundation?.flood_probability || 0.8;
   const baseRain = eventData?.rainfall?.rainfall_mm_hr || 87.0;
+  const areaType = eventData?.location?.flood_area_type || "Depression Basin";
 
   // What-If Simulator State
   const [rainModifier, setRainModifier] = useState(0); // -50% to +100%
@@ -241,7 +242,7 @@ export default function ImpactMode({ eventData, activeZone }) {
         </div>
 
         <div className="mt-3 p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)] text-xs text-[var(--text-secondary)]">
-          <strong className="text-[var(--text-primary)]">Analytical Synthesis:</strong> Inundation hazard is primarily driven by saturation-excess overland runoff rather than infiltration deficit. Convective rain volume of {baseRain} mm/hr immediately translates to surface pooling due to depressed basin topography ({activeZone?.floodArea}).
+          <strong className="text-[var(--text-primary)]">Analytical Synthesis:</strong> Inundation hazard is primarily driven by saturation-excess overland runoff rather than infiltration deficit. Convective rain volume of {baseRain} mm/hr immediately translates to surface pooling due to depressed basin topography ({areaType}).
         </div>
       </div>
 

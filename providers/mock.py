@@ -23,7 +23,6 @@ class MockForecastProvider(ForecastProvider, RiskProvider):
 
     def __init__(self, scenario_path: Optional[str] = None):
         if scenario_path is None:
-            # Default to demo/replay/scenario.json relative to repository root
             base_dir = Path(__file__).resolve().parent.parent
             scenario_path = str(base_dir / "demo" / "replay" / "scenario.json")
 
@@ -53,12 +52,26 @@ class MockForecastProvider(ForecastProvider, RiskProvider):
     def risk_tiles(self) -> List[Dict[str, Any]]:
         return self._data.get("risk_tiles", [])
 
+    def get_events_summary(self) -> List[Dict[str, Any]]:
+        """Return high-level summary of all available replay events for UI selection."""
+        self._last_fetch_time = datetime.now(timezone.utc).isoformat()
+        summaries = []
+        for ev in self.events:
+            loc = ev.get("location", {})
+            summaries.append({
+                "event_id": ev["event_id"],
+                "zone_id": loc.get("zone_id", ""),
+                "zone_name": loc.get("zone_name", loc.get("zone_id", "")),
+                "priority": ev.get("priority", "MEDIUM"),
+            })
+        return summaries
+
     def get_forecast(self, event_id: str) -> Dict[str, Any]:
         """Return rainfall forecast for an event_id."""
         return self.get_rainfall(event_id=event_id)
 
     def get_rainfall(
-        self, event_id: Optional[str] = None, zone_id: Optional[str] = None
+        self, event_id: Optional[str] = None, zone_id: Optional[str] = None, simulate_radar_outage: bool = False
     ) -> Dict[str, Any]:
         """
         Retrieve rainfall output for an event_id or zone_id.
@@ -66,20 +79,25 @@ class MockForecastProvider(ForecastProvider, RiskProvider):
         """
         self._last_fetch_time = datetime.now(timezone.utc).isoformat()
         for ev in self.events:
-            if event_id and ev.get("event_id") == event_id:
-                return ev["rainfall"]
-            if zone_id and ev.get("location", {}).get("zone_id") == zone_id:
-                return ev["rainfall"]
+            if (event_id and ev.get("event_id") == event_id) or (zone_id and ev.get("location", {}).get("zone_id") == zone_id):
+                rain = dict(ev["rainfall"])
+                if simulate_radar_outage:
+                    rain["source"] = "imd_kalpana_satellite_fallback"
+                    rain["confidence"] = max(0.45, round(rain.get("confidence", 0.8) - 0.28, 2))
+                return rain
 
-        # Default fallback to first event if neither specified
         if not event_id and not zone_id and self.events:
-            return self.events[0]["rainfall"]
+            rain = dict(self.events[0]["rainfall"])
+            if simulate_radar_outage:
+                rain["source"] = "imd_kalpana_satellite_fallback"
+                rain["confidence"] = max(0.45, round(rain.get("confidence", 0.8) - 0.28, 2))
+            return rain
 
         identifier = f"event_id={event_id}" if event_id else f"zone_id={zone_id}"
         raise ValueError(f"Rainfall record not found for {identifier}")
 
     def get_inundation(
-        self, event_id: Optional[str] = None, zone_id: Optional[str] = None
+        self, event_id: Optional[str] = None, zone_id: Optional[str] = None, simulate_radar_outage: bool = False
     ) -> Dict[str, Any]:
         """
         Retrieve inundation output for an event_id or zone_id.
@@ -87,38 +105,62 @@ class MockForecastProvider(ForecastProvider, RiskProvider):
         """
         self._last_fetch_time = datetime.now(timezone.utc).isoformat()
         for ev in self.events:
-            if event_id and ev.get("event_id") == event_id:
-                return ev["inundation"]
-            if zone_id and ev.get("location", {}).get("zone_id") == zone_id:
-                return ev["inundation"]
+            if (event_id and ev.get("event_id") == event_id) or (zone_id and ev.get("location", {}).get("zone_id") == zone_id):
+                inun = dict(ev["inundation"])
+                if simulate_radar_outage:
+                    inun["confidence"] = max(0.42, round(inun.get("confidence", 0.8) - 0.25, 2))
+                return inun
 
         if not event_id and not zone_id and self.events:
-            return self.events[0]["inundation"]
+            inun = dict(self.events[0]["inundation"])
+            if simulate_radar_outage:
+                inun["confidence"] = max(0.42, round(inun.get("confidence", 0.8) - 0.25, 2))
+            return inun
 
         identifier = f"event_id={event_id}" if event_id else f"zone_id={zone_id}"
         raise ValueError(f"Inundation record not found for {identifier}")
 
-    def get_event(self, event_id: str) -> Dict[str, Any]:
+    def get_event(self, event_id: str, simulate_radar_outage: bool = False) -> Dict[str, Any]:
         """
-        Retrieve joined DecisionObject for an event_id.
+        Retrieve joined DecisionObject for an event_id with optional simulated radar outage.
         Raises ValueError if event_id not found.
         """
         self._last_fetch_time = datetime.now(timezone.utc).isoformat()
         for ev in self.events:
             if ev.get("event_id") == event_id:
-                # Return dictionary matching DecisionObject schema
+                rainfall_data = dict(ev["rainfall"])
+                inundation_data = dict(ev["inundation"])
+                fused_confidence = float(ev["confidence"])
+
+                radar_outage = False
+                fallback_mode = False
+                fallback_source = None
+
+                if simulate_radar_outage:
+                    radar_outage = True
+                    fallback_mode = True
+                    fallback_source = "imd_kalpana_satellite_fallback"
+                    rainfall_data["source"] = "imd_kalpana_satellite_fallback"
+                    rainfall_data["confidence"] = max(0.45, round(rainfall_data.get("confidence", 0.84) - 0.28, 2))
+                    inundation_data["confidence"] = max(0.42, round(inundation_data.get("confidence", 0.81) - 0.25, 2))
+                    fused_confidence = max(0.45, round(fused_confidence - 0.26, 2))
+
                 return {
                     "event_id": ev["event_id"],
                     "location": ev["location"],
-                    "rainfall": ev["rainfall"],
-                    "inundation": ev["inundation"],
-                    "confidence": ev["confidence"],
+                    "rainfall": rainfall_data,
+                    "inundation": inundation_data,
+                    "confidence": fused_confidence,
                     "impact": ev["impact"],
                     "priority": ev["priority"],
                     "actions": ev["actions"],
                     "data_source": "PRECOMPUTED_REPLAY",
                     "status": "PROTOTYPE",
                     "timeline": ev.get("timeline", []),
+                    "response_route": ev.get("response_route"),
+                    "radar_outage": radar_outage,
+                    "fallback_mode": fallback_mode,
+                    "fallback_source": fallback_source,
                 }
 
         raise ValueError(f"Event not found for event_id={event_id}")

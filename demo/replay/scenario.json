@@ -10,7 +10,12 @@
     {
       "event_id": "E001",
       "location": {
-        "zone_id": "Z42"
+        "zone_id": "Z42",
+        "city": "Chennai",
+        "zone_name": "Velachery South",
+        "latitude": 12.9815,
+        "longitude": 80.218,
+        "flood_area_type": "Depression Bowl"
       },
       "rainfall": {
         "event_id": "E001",
@@ -50,17 +55,107 @@
       "data_source": "PRECOMPUTED_REPLAY",
       "status": "PROTOTYPE",
       "timeline": [
-        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 25.0, "rainfall_accumulation_mm": 25.0, "flood_probability": 0.20, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 55.0, "rainfall_accumulation_mm": 70.0, "flood_probability": 0.55, "depth_band": "0.3-0.5m" },
-        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 60, "rainfall_mm_hr": 87.0, "rainfall_accumulation_mm": 124.0, "flood_probability": 0.87, "depth_band": "0.5-1.0m" },
-        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 60.0, "rainfall_accumulation_mm": 160.0, "flood_probability": 0.82, "depth_band": "0.5-1.0m" },
-        { "timestamp": "2026-09-06T11:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 35.0, "rainfall_accumulation_mm": 185.0, "flood_probability": 0.65, "depth_band": "0.3-0.5m" }
-      ]
+        {
+          "timestamp": "2026-09-06T07:00:00Z",
+          "lead_minutes": 0,
+          "rainfall_mm_hr": 25.0,
+          "rainfall_accumulation_mm": 25.0,
+          "flood_probability": 0.2,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T08:00:00Z",
+          "lead_minutes": 30,
+          "rainfall_mm_hr": 55.0,
+          "rainfall_accumulation_mm": 70.0,
+          "flood_probability": 0.55,
+          "depth_band": "0.3-0.5m"
+        },
+        {
+          "timestamp": "2026-09-06T09:00:00Z",
+          "lead_minutes": 60,
+          "rainfall_mm_hr": 87.0,
+          "rainfall_accumulation_mm": 124.0,
+          "flood_probability": 0.87,
+          "depth_band": "0.5-1.0m"
+        },
+        {
+          "timestamp": "2026-09-06T10:00:00Z",
+          "lead_minutes": 90,
+          "rainfall_mm_hr": 60.0,
+          "rainfall_accumulation_mm": 160.0,
+          "flood_probability": 0.82,
+          "depth_band": "0.5-1.0m"
+        },
+        {
+          "timestamp": "2026-09-06T11:00:00Z",
+          "lead_minutes": 120,
+          "rainfall_mm_hr": 35.0,
+          "rainfall_accumulation_mm": 185.0,
+          "flood_probability": 0.65,
+          "depth_band": "0.3-0.5m"
+        }
+      ],
+      "response_route": {
+        "incident_id": "INC-01",
+        "title": "Critical Ward 42 Rescue & Evacuation",
+        "lead_time": "T-20 min",
+        "risk_score": 0.92,
+        "impassable_road": "Velachery Main Road (Near Lake)",
+        "safe_route": "Inner Ring Road -> OMR Elevated Bypass",
+        "route_coordinates": [
+          [
+            12.9815,
+            80.218
+          ],
+          [
+            12.99,
+            80.23
+          ],
+          [
+            13.005,
+            80.245
+          ],
+          [
+            13.015,
+            80.255
+          ]
+        ],
+        "blocked_coordinates": [
+          [
+            12.978,
+            80.215
+          ],
+          [
+            12.983,
+            80.221
+          ]
+        ],
+        "milestones": [
+          {
+            "time": "T-20 min",
+            "label": "Velachery low-lying segments become impassable"
+          },
+          {
+            "time": "T-35 min",
+            "label": "Overland flood surge reaches residential culverts"
+          },
+          {
+            "time": "T-70 min",
+            "label": "Projected peak inundation depth (0.85m)"
+          }
+        ]
+      }
     },
     {
       "event_id": "E002",
       "location": {
-        "zone_id": "Z18"
+        "zone_id": "Z18",
+        "city": "Chennai",
+        "zone_name": "Saidapet Adyar",
+        "latitude": 13.021,
+        "longitude": 80.223,
+        "flood_area_type": "River Floodplain"
       },
       "rainfall": {
         "event_id": "E002",
@@ -100,17 +195,99 @@
       "data_source": "PRECOMPUTED_REPLAY",
       "status": "PROTOTYPE",
       "timeline": [
-        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 20.0, "rainfall_accumulation_mm": 20.0, "flood_probability": 0.15, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 45.0, "rainfall_accumulation_mm": 52.0, "flood_probability": 0.48, "depth_band": "0.1-0.3m" },
-        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 60, "rainfall_mm_hr": 65.0, "rainfall_accumulation_mm": 88.0, "flood_probability": 0.76, "depth_band": "0.3-0.5m" },
-        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 40.0, "rainfall_accumulation_mm": 115.0, "flood_probability": 0.68, "depth_band": "0.3-0.5m" },
-        { "timestamp": "2026-09-06T11:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 20.0, "rainfall_accumulation_mm": 130.0, "flood_probability": 0.50, "depth_band": "0.1-0.3m" }
-      ]
+        {
+          "timestamp": "2026-09-06T07:00:00Z",
+          "lead_minutes": 0,
+          "rainfall_mm_hr": 20.0,
+          "rainfall_accumulation_mm": 20.0,
+          "flood_probability": 0.15,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T08:00:00Z",
+          "lead_minutes": 30,
+          "rainfall_mm_hr": 45.0,
+          "rainfall_accumulation_mm": 52.0,
+          "flood_probability": 0.48,
+          "depth_band": "0.1-0.3m"
+        },
+        {
+          "timestamp": "2026-09-06T09:00:00Z",
+          "lead_minutes": 60,
+          "rainfall_mm_hr": 65.0,
+          "rainfall_accumulation_mm": 88.0,
+          "flood_probability": 0.76,
+          "depth_band": "0.3-0.5m"
+        },
+        {
+          "timestamp": "2026-09-06T10:00:00Z",
+          "lead_minutes": 90,
+          "rainfall_mm_hr": 40.0,
+          "rainfall_accumulation_mm": 115.0,
+          "flood_probability": 0.68,
+          "depth_band": "0.3-0.5m"
+        },
+        {
+          "timestamp": "2026-09-06T11:00:00Z",
+          "lead_minutes": 120,
+          "rainfall_mm_hr": 20.0,
+          "rainfall_accumulation_mm": 130.0,
+          "flood_probability": 0.5,
+          "depth_band": "0.1-0.3m"
+        }
+      ],
+      "response_route": {
+        "incident_id": "INC-02",
+        "title": "Saidapet Adyar Causeway Silt Surge Response",
+        "lead_time": "T-40 min",
+        "risk_score": 0.78,
+        "impassable_road": "Saidapet Causeway Submerged",
+        "safe_route": "Anna Salai Flyover Arterial",
+        "route_coordinates": [
+          [
+            13.021,
+            80.223
+          ],
+          [
+            13.028,
+            80.235
+          ],
+          [
+            13.038,
+            80.245
+          ]
+        ],
+        "blocked_coordinates": [
+          [
+            13.018,
+            80.22
+          ]
+        ],
+        "milestones": [
+          {
+            "time": "T-25 min",
+            "label": "Adyar causeway water level approaches red mark"
+          },
+          {
+            "time": "T-45 min",
+            "label": "Sub-arterial feeder road inundation"
+          },
+          {
+            "time": "T-80 min",
+            "label": "Peak river corridor surge"
+          }
+        ]
+      }
     },
     {
       "event_id": "E003",
       "location": {
-        "zone_id": "Z07"
+        "zone_id": "Z07",
+        "city": "Chennai",
+        "zone_name": "T. Nagar Core",
+        "latitude": 13.0418,
+        "longitude": 80.2341,
+        "flood_area_type": "Drainage Choke"
       },
       "rainfall": {
         "event_id": "E003",
@@ -119,7 +296,7 @@
         "lead_minutes": 45,
         "rainfall_mm_hr": 52.0,
         "rainfall_accumulation_mm": 64.0,
-        "confidence": 0.80,
+        "confidence": 0.8,
         "prediction_uri": "mock://rainfall/E003",
         "source": "mock",
         "status": "PROTOTYPE"
@@ -149,17 +326,99 @@
       "data_source": "PRECOMPUTED_REPLAY",
       "status": "PROTOTYPE",
       "timeline": [
-        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 15.0, "rainfall_accumulation_mm": 15.0, "flood_probability": 0.10, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 35.0, "rainfall_accumulation_mm": 40.0, "flood_probability": 0.40, "depth_band": "0.1-0.3m" },
-        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 45, "rainfall_mm_hr": 52.0, "rainfall_accumulation_mm": 64.0, "flood_probability": 0.62, "depth_band": "0.1-0.3m" },
-        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 30.0, "rainfall_accumulation_mm": 85.0, "flood_probability": 0.50, "depth_band": "0.1-0.3m" },
-        { "timestamp": "2026-09-06T11:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 10.0, "rainfall_accumulation_mm": 92.0, "flood_probability": 0.30, "depth_band": "<0.1m" }
-      ]
+        {
+          "timestamp": "2026-09-06T07:00:00Z",
+          "lead_minutes": 0,
+          "rainfall_mm_hr": 15.0,
+          "rainfall_accumulation_mm": 15.0,
+          "flood_probability": 0.1,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T08:00:00Z",
+          "lead_minutes": 30,
+          "rainfall_mm_hr": 35.0,
+          "rainfall_accumulation_mm": 40.0,
+          "flood_probability": 0.4,
+          "depth_band": "0.1-0.3m"
+        },
+        {
+          "timestamp": "2026-09-06T09:00:00Z",
+          "lead_minutes": 45,
+          "rainfall_mm_hr": 52.0,
+          "rainfall_accumulation_mm": 64.0,
+          "flood_probability": 0.62,
+          "depth_band": "0.1-0.3m"
+        },
+        {
+          "timestamp": "2026-09-06T10:00:00Z",
+          "lead_minutes": 90,
+          "rainfall_mm_hr": 30.0,
+          "rainfall_accumulation_mm": 85.0,
+          "flood_probability": 0.5,
+          "depth_band": "0.1-0.3m"
+        },
+        {
+          "timestamp": "2026-09-06T11:00:00Z",
+          "lead_minutes": 120,
+          "rainfall_mm_hr": 10.0,
+          "rainfall_accumulation_mm": 92.0,
+          "flood_probability": 0.3,
+          "depth_band": "<0.1m"
+        }
+      ],
+      "response_route": {
+        "incident_id": "INC-03",
+        "title": "T. Nagar Commercial Core Traffic Diversion",
+        "lead_time": "T-50 min",
+        "risk_score": 0.68,
+        "impassable_road": "Usman Road Underpass Choke",
+        "safe_route": "GN Chetty Road Elevated Corridor",
+        "route_coordinates": [
+          [
+            13.0418,
+            80.2341
+          ],
+          [
+            13.048,
+            80.242
+          ],
+          [
+            13.055,
+            80.25
+          ]
+        ],
+        "blocked_coordinates": [
+          [
+            13.039,
+            80.231
+          ]
+        ],
+        "milestones": [
+          {
+            "time": "T-30 min",
+            "label": "Underpass pump overload warning"
+          },
+          {
+            "time": "T-50 min",
+            "label": "Commercial core storm drain choke"
+          },
+          {
+            "time": "T-90 min",
+            "label": "Drainage runoff stabilization"
+          }
+        ]
+      }
     },
     {
       "event_id": "E004",
       "location": {
-        "zone_id": "Z29"
+        "zone_id": "Z29",
+        "city": "Chennai",
+        "zone_name": "Tambaram Basin",
+        "latitude": 12.9249,
+        "longitude": 80.1,
+        "flood_area_type": "Lowland Outflow"
       },
       "rainfall": {
         "event_id": "E004",
@@ -198,16 +457,87 @@
       "data_source": "PRECOMPUTED_REPLAY",
       "status": "PROTOTYPE",
       "timeline": [
-        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 10.0, "rainfall_accumulation_mm": 10.0, "flood_probability": 0.05, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 25.0, "rainfall_accumulation_mm": 28.0, "flood_probability": 0.25, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 90, "rainfall_mm_hr": 38.0, "rainfall_accumulation_mm": 45.0, "flood_probability": 0.44, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T10:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 20.0, "rainfall_accumulation_mm": 60.0, "flood_probability": 0.35, "depth_band": "<0.1m" }
-      ]
+        {
+          "timestamp": "2026-09-06T07:00:00Z",
+          "lead_minutes": 0,
+          "rainfall_mm_hr": 10.0,
+          "rainfall_accumulation_mm": 10.0,
+          "flood_probability": 0.05,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T08:00:00Z",
+          "lead_minutes": 30,
+          "rainfall_mm_hr": 25.0,
+          "rainfall_accumulation_mm": 28.0,
+          "flood_probability": 0.25,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T09:00:00Z",
+          "lead_minutes": 90,
+          "rainfall_mm_hr": 38.0,
+          "rainfall_accumulation_mm": 45.0,
+          "flood_probability": 0.44,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T10:00:00Z",
+          "lead_minutes": 120,
+          "rainfall_mm_hr": 20.0,
+          "rainfall_accumulation_mm": 60.0,
+          "flood_probability": 0.35,
+          "depth_band": "<0.1m"
+        }
+      ],
+      "response_route": {
+        "incident_id": "INC-04",
+        "title": "Tambaram Basin Outflow Monitoring",
+        "lead_time": "T-90 min",
+        "risk_score": 0.44,
+        "impassable_road": "GST Road Culvert Dip",
+        "safe_route": "Tambaram Bypass Flyover",
+        "route_coordinates": [
+          [
+            12.9249,
+            80.1
+          ],
+          [
+            12.935,
+            80.11
+          ],
+          [
+            12.945,
+            80.12
+          ]
+        ],
+        "blocked_coordinates": [
+          [
+            12.92,
+            80.095
+          ]
+        ],
+        "milestones": [
+          {
+            "time": "T-45 min",
+            "label": "Outflow channel rate increase"
+          },
+          {
+            "time": "T-90 min",
+            "label": "Minor waterlogging on marginal shoulders"
+          }
+        ]
+      }
     },
     {
       "event_id": "E005",
       "location": {
-        "zone_id": "Z12"
+        "zone_id": "Z12",
+        "city": "Chennai",
+        "zone_name": "Marina Coastal",
+        "latitude": 13.05,
+        "longitude": 80.2824,
+        "flood_area_type": "Coastal Sand Shelf"
       },
       "rainfall": {
         "event_id": "E005",
@@ -227,12 +557,12 @@
         "flood_probability": 0.18,
         "depth_band": "<0.1m",
         "risk_uri": "mock://inundation/E005",
-        "confidence": 0.80,
+        "confidence": 0.8,
         "valid_time": "2026-09-06T09:00:00Z",
         "source": "mock",
         "status": "PROTOTYPE"
       },
-      "confidence": 0.80,
+      "confidence": 0.8,
       "impact": {
         "population_exposed": 3200,
         "critical_assets": 0,
@@ -245,10 +575,64 @@
       "data_source": "PRECOMPUTED_REPLAY",
       "status": "PROTOTYPE",
       "timeline": [
-        { "timestamp": "2026-09-06T07:00:00Z", "lead_minutes": 0, "rainfall_mm_hr": 8.0, "rainfall_accumulation_mm": 8.0, "flood_probability": 0.05, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T08:00:00Z", "lead_minutes": 30, "rainfall_mm_hr": 15.0, "rainfall_accumulation_mm": 18.0, "flood_probability": 0.10, "depth_band": "<0.1m" },
-        { "timestamp": "2026-09-06T09:00:00Z", "lead_minutes": 120, "rainfall_mm_hr": 22.0, "rainfall_accumulation_mm": 28.0, "flood_probability": 0.18, "depth_band": "<0.1m" }
-      ]
+        {
+          "timestamp": "2026-09-06T07:00:00Z",
+          "lead_minutes": 0,
+          "rainfall_mm_hr": 8.0,
+          "rainfall_accumulation_mm": 8.0,
+          "flood_probability": 0.05,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T08:00:00Z",
+          "lead_minutes": 30,
+          "rainfall_mm_hr": 15.0,
+          "rainfall_accumulation_mm": 18.0,
+          "flood_probability": 0.1,
+          "depth_band": "<0.1m"
+        },
+        {
+          "timestamp": "2026-09-06T09:00:00Z",
+          "lead_minutes": 120,
+          "rainfall_mm_hr": 22.0,
+          "rainfall_accumulation_mm": 28.0,
+          "flood_probability": 0.18,
+          "depth_band": "<0.1m"
+        }
+      ],
+      "response_route": {
+        "incident_id": "INC-05",
+        "title": "Marina Coastal Outfall Telemetry Watch",
+        "lead_time": "T-120 min",
+        "risk_score": 0.18,
+        "impassable_road": "Kamarajar Promenade Low Dips",
+        "safe_route": "Santhome High Road Arterial",
+        "route_coordinates": [
+          [
+            13.05,
+            80.2824
+          ],
+          [
+            13.058,
+            80.283
+          ],
+          [
+            13.065,
+            80.2835
+          ]
+        ],
+        "blocked_coordinates": [],
+        "milestones": [
+          {
+            "time": "T-60 min",
+            "label": "Tidal gauge baseline sampling"
+          },
+          {
+            "time": "T-120 min",
+            "label": "Nominal drainage runoff to ocean"
+          }
+        ]
+      }
     }
   ],
   "risk_tiles": [
@@ -259,7 +643,10 @@
       "rainfall_mm_hr": 87.0,
       "flood_probability": 0.87,
       "depth_band": "0.5-1.0m",
-      "confidence": 0.81
+      "confidence": 0.81,
+      "latitude": 12.9815,
+      "longitude": 80.218,
+      "zone_name": "Velachery South"
     },
     {
       "tile_id": "tile_1025",
@@ -268,7 +655,10 @@
       "rainfall_mm_hr": 65.0,
       "flood_probability": 0.76,
       "depth_band": "0.3-0.5m",
-      "confidence": 0.79
+      "confidence": 0.79,
+      "latitude": 13.021,
+      "longitude": 80.223,
+      "zone_name": "Saidapet Adyar"
     },
     {
       "tile_id": "tile_1026",
@@ -277,7 +667,10 @@
       "rainfall_mm_hr": 52.0,
       "flood_probability": 0.62,
       "depth_band": "0.1-0.3m",
-      "confidence": 0.75
+      "confidence": 0.75,
+      "latitude": 13.0418,
+      "longitude": 80.2341,
+      "zone_name": "T. Nagar Core"
     },
     {
       "tile_id": "tile_1027",
@@ -286,7 +679,10 @@
       "rainfall_mm_hr": 38.0,
       "flood_probability": 0.44,
       "depth_band": "<0.1m",
-      "confidence": 0.73
+      "confidence": 0.73,
+      "latitude": 12.9249,
+      "longitude": 80.1,
+      "zone_name": "Tambaram Basin"
     },
     {
       "tile_id": "tile_1028",
@@ -295,7 +691,10 @@
       "rainfall_mm_hr": 22.0,
       "flood_probability": 0.18,
       "depth_band": "<0.1m",
-      "confidence": 0.80
+      "confidence": 0.8,
+      "latitude": 13.05,
+      "longitude": 80.2824,
+      "zone_name": "Marina Coastal"
     }
   ]
 }

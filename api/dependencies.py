@@ -10,6 +10,7 @@ Handles provider selection via PROVIDER_MODE environment variable:
 - live: Tries both live models, falls back to mock
 
 Guarantees seamless fallback to PRECOMPUTED_REPLAY data without breaking contract schemas.
+Provides explicit source aggregation (LIVE, MOCK, MIXED) and honest verification statuses.
 """
 import logging
 import os
@@ -60,8 +61,15 @@ class ProviderManager:
     def mode(self) -> str:
         return get_provider_mode()
 
+    def get_events_summary(self) -> List[Dict[str, Any]]:
+        """Retrieve summaries of available events."""
+        return self.mock.get_events_summary()
+
     def get_rainfall(
-        self, event_id: Optional[str] = None, zone_id: Optional[str] = None
+        self,
+        event_id: Optional[str] = None,
+        zone_id: Optional[str] = None,
+        simulate_radar_outage: bool = False,
     ) -> Dict[str, Any]:
         """
         Attempts real rainfall provider if configured; falls back safely to mock replay data.
@@ -80,16 +88,19 @@ class ProviderManager:
                 )
 
         # Fallback to mock replay
-        data = self.mock.get_rainfall(event_id=event_id, zone_id=zone_id)
+        data = self.mock.get_rainfall(event_id=event_id, zone_id=zone_id, simulate_radar_outage=simulate_radar_outage)
         record_fetch_success("mock")
-        # Ensure contract compliant tags
         result = dict(data)
-        result["source"] = "mock"
+        if not simulate_radar_outage:
+            result["source"] = "mock"
         result["status"] = "PROTOTYPE"
         return result
 
     def get_inundation(
-        self, event_id: Optional[str] = None, zone_id: Optional[str] = None
+        self,
+        event_id: Optional[str] = None,
+        zone_id: Optional[str] = None,
+        simulate_radar_outage: bool = False,
     ) -> Dict[str, Any]:
         """
         Attempts real inundation provider if configured; falls back safely to mock replay data.
@@ -108,7 +119,7 @@ class ProviderManager:
                 )
 
         # Fallback to mock replay
-        data = self.mock.get_inundation(event_id=event_id, zone_id=zone_id)
+        data = self.mock.get_inundation(event_id=event_id, zone_id=zone_id, simulate_radar_outage=simulate_radar_outage)
         record_fetch_success("mock")
         result = dict(data)
         result["source"] = "mock"
@@ -134,14 +145,19 @@ class ProviderManager:
         record_fetch_success("mock")
         return tiles
 
-    def get_decision_event(self, event_id: str) -> Dict[str, Any]:
+    def get_decision_event(self, event_id: str, simulate_radar_outage: bool = False) -> Dict[str, Any]:
         """
         Retrieves fused DecisionObject for event_id.
         Tries live models if configured, or falls back to mock replay.
-        Always sets data_source to LIVE or PRECOMPUTED_REPLAY accordingly.
+        Implements strict source aggregation:
+        - LIVE: both rainfall and inundation are live models and succeeded
+        - MIXED: exactly one provider is live and the other is mock/replay
+        - PRECOMPUTED_REPLAY: both providers are mock/replay
+        Status is VERIFIED only if LIVE, otherwise PROTOTYPE.
         """
         mode = self.mode
-        is_live_success = False
+        is_rainfall_live = False
+        is_inundation_live = False
 
         rainfall_data: Optional[Dict[str, Any]] = None
         inundation_data: Optional[Dict[str, Any]] = None
@@ -152,7 +168,7 @@ class ProviderManager:
                 rainfall_data["source"] = "rainfall_model"
                 rainfall_data["status"] = "VERIFIED"
                 record_fetch_success("rainfall_model")
-                is_live_success = True
+                is_rainfall_live = True
             except Exception as exc:
                 logger.warning(f"Live rainfall failed ({exc}), falling back to mock.")
 
@@ -162,12 +178,12 @@ class ProviderManager:
                 inundation_data["source"] = "inundation_model"
                 inundation_data["status"] = "VERIFIED"
                 record_fetch_success("inundation_model")
-                is_live_success = True
+                is_inundation_live = True
             except Exception as exc:
                 logger.warning(f"Live inundation failed ({exc}), falling back to mock.")
 
         # Always fetch base mock replay event as stable backbone
-        mock_event = self.mock.get_event(event_id=event_id)
+        mock_event = self.mock.get_event(event_id=event_id, simulate_radar_outage=simulate_radar_outage)
         record_fetch_success("mock")
 
         event_payload = dict(mock_event)
@@ -176,8 +192,16 @@ class ProviderManager:
         if inundation_data is not None:
             event_payload["inundation"] = inundation_data
 
-        event_payload["data_source"] = "LIVE" if (is_live_success and mode == "live") else "PRECOMPUTED_REPLAY"
-        event_payload["status"] = "VERIFIED" if (is_live_success and mode == "live") else "PROTOTYPE"
+        # Explicit Source and Provenance Aggregation
+        if is_rainfall_live and is_inundation_live:
+            event_payload["data_source"] = "LIVE"
+            event_payload["status"] = "VERIFIED"
+        elif is_rainfall_live or is_inundation_live:
+            event_payload["data_source"] = "MIXED"
+            event_payload["status"] = "PROTOTYPE"
+        else:
+            event_payload["data_source"] = "PRECOMPUTED_REPLAY"
+            event_payload["status"] = "PROTOTYPE"
 
         return event_payload
 

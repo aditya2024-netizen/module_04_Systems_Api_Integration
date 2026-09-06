@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SAMPLE_EVENTS, ZONE_COORDINATES, INCIDENTS } from "./data/fallback";
+import { fetchEvents, fetchEvent, fetchRiskTiles, fetchHealth } from "./lib/api";
 import ZoneMap from "./components/ZoneMap";
 import StatusStrip from "./components/StatusStrip";
 import TimelineBar from "./components/TimelineBar";
@@ -10,242 +10,113 @@ import ImpactMode from "./components/ImpactMode";
 import ResponseMode from "./components/ResponseMode";
 import CapDrawer from "./components/CapDrawer";
 
-const FALLBACK_PAYLOADS = {
-  E001: {
-    event_id: "E001",
-    location: { zone_id: "Z42" },
-    rainfall: {
-      event_id: "E001",
-      zone_id: "Z42",
-      valid_time: "2026-09-06T09:00:00Z",
-      lead_minutes: 60,
-      rainfall_mm_hr: 87.0,
-      rainfall_accumulation_mm: 124.0,
-      confidence: 0.84,
-      prediction_uri: "mock://rainfall/E001",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    inundation: {
-      event_id: "E001",
-      zone_id: "Z42",
-      flood_probability: 0.87,
-      depth_band: "0.5-1.0m",
-      risk_uri: "mock://inundation/E001",
-      confidence: 0.81,
-      valid_time: "2026-09-06T09:00:00Z",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    confidence: 0.81,
-    impact: { population_exposed: 21400, critical_assets: 3, roads_affected: 2 },
-    priority: "CRITICAL",
-    actions: ["ALERT", "CLOSE_ROAD", "DEPLOY_TEAM"],
-    data_source: "PRECOMPUTED_REPLAY",
-    status: "PROTOTYPE",
-    timeline: [
-      { step_label: "T+00", lead_minutes: 0, rainfall_mm_hr: 38.0, depth_band: "<0.1m", flood_probability: 0.22 },
-      { step_label: "T+15", lead_minutes: 15, rainfall_mm_hr: 62.0, depth_band: "0.1-0.3m", flood_probability: 0.45 },
-      { step_label: "T+30", lead_minutes: 30, rainfall_mm_hr: 87.0, depth_band: "0.3-0.5m", flood_probability: 0.72 },
-      { step_label: "T+45", lead_minutes: 45, rainfall_mm_hr: 105.0, depth_band: "0.5-1.0m", flood_probability: 0.87 },
-      { step_label: "T+60", lead_minutes: 60, rainfall_mm_hr: 87.0, depth_band: "0.5-1.0m", flood_probability: 0.84 },
-    ]
-  },
-  E002: {
-    event_id: "E002",
-    location: { zone_id: "Z18" },
-    rainfall: {
-      event_id: "E002",
-      zone_id: "Z18",
-      valid_time: "2026-09-06T09:00:00Z",
-      lead_minutes: 60,
-      rainfall_mm_hr: 65.0,
-      rainfall_accumulation_mm: 88.0,
-      confidence: 0.82,
-      prediction_uri: "mock://rainfall/E002",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    inundation: {
-      event_id: "E002",
-      zone_id: "Z18",
-      flood_probability: 0.76,
-      depth_band: "0.3-0.5m",
-      risk_uri: "mock://inundation/E002",
-      confidence: 0.79,
-      valid_time: "2026-09-06T09:00:00Z",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    confidence: 0.79,
-    impact: { population_exposed: 14200, critical_assets: 2, roads_affected: 3 },
-    priority: "HIGH",
-    actions: ["ALERT", "PREPOSITION_PUMPS", "MONITOR_CULVERTS"],
-    data_source: "PRECOMPUTED_REPLAY",
-    status: "PROTOTYPE",
-    timeline: [
-      { step_label: "T+00", lead_minutes: 0, rainfall_mm_hr: 30.0, depth_band: "<0.1m", flood_probability: 0.20 },
-      { step_label: "T+20", lead_minutes: 20, rainfall_mm_hr: 48.0, depth_band: "0.1-0.3m", flood_probability: 0.40 },
-      { step_label: "T+40", lead_minutes: 40, rainfall_mm_hr: 65.0, depth_band: "0.3-0.5m", flood_probability: 0.65 },
-      { step_label: "T+60", lead_minutes: 60, rainfall_mm_hr: 65.0, depth_band: "0.3-0.5m", flood_probability: 0.76 },
-    ]
-  },
-  E003: {
-    event_id: "E003",
-    location: { zone_id: "Z07" },
-    rainfall: {
-      event_id: "E003",
-      zone_id: "Z07",
-      valid_time: "2026-09-06T09:00:00Z",
-      lead_minutes: 45,
-      rainfall_mm_hr: 52.0,
-      rainfall_accumulation_mm: 64.0,
-      confidence: 0.80,
-      prediction_uri: "mock://rainfall/E003",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    inundation: {
-      event_id: "E003",
-      zone_id: "Z07",
-      flood_probability: 0.62,
-      depth_band: "0.1-0.3m",
-      risk_uri: "mock://inundation/E003",
-      confidence: 0.75,
-      valid_time: "2026-09-06T09:00:00Z",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    confidence: 0.75,
-    impact: { population_exposed: 35000, critical_assets: 5, roads_affected: 4 },
-    priority: "HIGH",
-    actions: ["TRAFFIC_DIVERSION", "CLEAR_STORM_DRAINS"],
-    data_source: "PRECOMPUTED_REPLAY",
-    status: "PROTOTYPE",
-  },
-  E004: {
-    event_id: "E004",
-    location: { zone_id: "Z29" },
-    rainfall: {
-      event_id: "E004",
-      zone_id: "Z29",
-      valid_time: "2026-09-06T09:00:00Z",
-      lead_minutes: 90,
-      rainfall_mm_hr: 38.0,
-      rainfall_accumulation_mm: 45.0,
-      confidence: 0.78,
-      prediction_uri: "mock://rainfall/E004",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    inundation: {
-      event_id: "E004",
-      zone_id: "Z29",
-      flood_probability: 0.44,
-      depth_band: "<0.1m",
-      risk_uri: "mock://inundation/E004",
-      confidence: 0.73,
-      valid_time: "2026-09-06T09:00:00Z",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    confidence: 0.73,
-    impact: { population_exposed: 8500, critical_assets: 1, roads_affected: 1 },
-    priority: "MEDIUM",
-    actions: ["ADVISORY_ISSUED", "MONITOR_GAUGES"],
-    data_source: "PRECOMPUTED_REPLAY",
-    status: "PROTOTYPE",
-  },
-  E005: {
-    event_id: "E005",
-    location: { zone_id: "Z12" },
-    rainfall: {
-      event_id: "E005",
-      zone_id: "Z12",
-      valid_time: "2026-09-06T09:00:00Z",
-      lead_minutes: 120,
-      rainfall_mm_hr: 22.0,
-      rainfall_accumulation_mm: 28.0,
-      confidence: 0.86,
-      prediction_uri: "mock://rainfall/E005",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    inundation: {
-      event_id: "E005",
-      zone_id: "Z12",
-      flood_probability: 0.18,
-      depth_band: "<0.1m",
-      risk_uri: "mock://inundation/E005",
-      confidence: 0.80,
-      valid_time: "2026-09-06T09:00:00Z",
-      source: "mock",
-      status: "PROTOTYPE",
-    },
-    confidence: 0.80,
-    impact: { population_exposed: 3200, critical_assets: 0, roads_affected: 0 },
-    priority: "LOW",
-    actions: ["ROUTINE_MONITORING"],
-    data_source: "PRECOMPUTED_REPLAY",
-    status: "PROTOTYPE",
-  },
-};
-
 export default function DashboardPage() {
   const [selectedEventId, setSelectedEventId] = useState("E001");
-  const [eventData, setEventData] = useState(FALLBACK_PAYLOADS.E001);
+  const [eventsList, setEventsList] = useState([]);
+  const [eventData, setEventData] = useState(null);
+  const [riskTiles, setRiskTiles] = useState([]);
   const [apiConnected, setApiConnected] = useState(false);
-  
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
+
   // Dashboard Modes: "hazard" | "impact" | "response"
   const [activeMode, setActiveMode] = useState("hazard");
-  
+
   // Interactive Timeline State
   const [timelineStepIndex, setTimelineStepIndex] = useState(0);
 
-  // Radar Outage Simulation
+  // Radar Outage Simulation State
   const [isRadarOutage, setIsRadarOutage] = useState(false);
-
-  // Active Incident for Response Routing
-  const [selectedIncidentId, setSelectedIncidentId] = useState("INC-01");
 
   // CAP Alert Modal Drawer State
   const [isCapDrawerOpen, setIsCapDrawerOpen] = useState(false);
 
-  // Fetch Event from FastAPI Single Source of Truth
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const healthRes = await fetch("http://127.0.0.1:8000/api/v1/health", { cache: "no-store" });
-        if (healthRes.ok) {
-          setApiConnected(true);
-        } else {
-          setApiConnected(false);
-        }
+  // Initial Load: Events List, Risk Tiles, and Health
+  async function loadInitialData() {
+    setLoading(true);
+    setErrorMessage(null);
 
-        const eventRes = await fetch(`http://127.0.0.1:8000/api/v1/event/${selectedEventId}`, { cache: "no-store" });
-        if (eventRes.ok) {
-          const e = await eventRes.json();
-          setEventData(e);
-        } else {
-          setEventData(FALLBACK_PAYLOADS[selectedEventId] || FALLBACK_PAYLOADS.E001);
+    try {
+      // 1. Health check
+      try {
+        const health = await fetchHealth();
+        if (health && health.status === "healthy") {
+          setApiConnected(true);
+        }
+      } catch (hErr) {
+        setApiConnected(false);
+      }
+
+      // 2. Fetch Events List
+      const events = await fetchEvents();
+      setEventsList(events);
+
+      // 3. Fetch Spatial Risk Tiles for map
+      const tiles = await fetchRiskTiles();
+      setRiskTiles(tiles);
+
+      // 4. Fetch Active Event (E001 or first event)
+      const initialId = events.length > 0 ? events[0].event_id : "E001";
+      setSelectedEventId(initialId);
+      const ev = await fetchEvent(initialId, { simulateRadarOutage: isRadarOutage });
+      setEventData(ev);
+      setApiConnected(true);
+      setLoading(false);
+    } catch (err) {
+      console.error("API Gateway error:", err);
+      setApiConnected(false);
+      setErrorMessage(
+        "Unable to connect to HydroSurge API Gateway at http://127.0.0.1:8000. Ensure the FastAPI service is running."
+      );
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  // Fetch Event when selectedEventId or isRadarOutage changes
+  useEffect(() => {
+    if (!selectedEventId) return;
+
+    let isMounted = true;
+    async function loadEvent() {
+      try {
+        const ev = await fetchEvent(selectedEventId, { simulateRadarOutage: isRadarOutage });
+        if (isMounted) {
+          setEventData(ev);
+          setErrorMessage(null);
+          setApiConnected(true);
         }
       } catch (err) {
-        setApiConnected(false);
-        setEventData(FALLBACK_PAYLOADS[selectedEventId] || FALLBACK_PAYLOADS.E001);
+        console.error(`Failed to fetch event ${selectedEventId}:`, err);
+        if (isMounted) {
+          setErrorMessage(
+            `Failed to load event ${selectedEventId} from API: ${err.message}`
+          );
+        }
       }
     }
 
-    loadData();
+    loadEvent();
     setTimelineStepIndex(0);
-  }, [selectedEventId]);
 
-  const activeZoneId = eventData.location?.zone_id || "Z42";
-  const activeZone = ZONE_COORDINATES[activeZoneId] || ZONE_COORDINATES.Z42;
-  const activeIncident = INCIDENTS.find((i) => i.id === selectedIncidentId) || INCIDENTS[0];
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedEventId, isRadarOutage]);
 
-  // Derive active timeline step
-  const timeline = eventData.timeline || [];
-  const activeTimelineStep = timeline.length > 0 ? timeline[Math.min(timelineStepIndex, timeline.length - 1)] : null;
+  const handleToggleRadarOutage = () => {
+    setIsRadarOutage((prev) => !prev);
+  };
+
+  const handleSelectZoneFromMap = (zId) => {
+    const matched = eventsList.find((e) => e.zone_id === zId);
+    if (matched) {
+      setSelectedEventId(matched.event_id);
+    }
+  };
 
   const priorityThemes = {
     CRITICAL: {
@@ -274,21 +145,61 @@ export default function DashboardPage() {
     },
   };
 
-  const currentTheme = priorityThemes[eventData.priority] || priorityThemes.MEDIUM;
+  // Render Loading State
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[var(--canvas)] text-[var(--text-primary)] flex items-center justify-center p-6">
+        <div className="text-center space-y-3">
+          <div className="h-8 w-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm font-medium text-slate-300">
+            Connecting to HydroSurge API Gateway...
+          </p>
+          <p className="text-xs text-slate-500 font-telemetry">
+            GET /api/v1/health &amp; /api/v1/events
+          </p>
+        </div>
+      </main>
+    );
+  }
 
-  const handleSelectZoneFromMap = (zId) => {
-    const matched = SAMPLE_EVENTS.find((e) => e.zone === zId);
-    if (matched) setSelectedEventId(matched.id);
+  // Render Hard API Error State (Refuses to load local fake data)
+  if (errorMessage && !eventData) {
+    return (
+      <main className="min-h-screen bg-[var(--canvas)] text-[var(--text-primary)] flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-xl bg-[var(--card)] border border-rose-600/60 p-6 space-y-4 shadow-2xl">
+          <div className="flex items-center gap-3 text-rose-400">
+            <span className="text-2xl">⚠️</span>
+            <h2 className="text-base font-bold text-white">API Connection Offline</h2>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            {errorMessage}
+          </p>
+          <div className="p-3 rounded bg-[var(--card-elevated)] border border-[var(--border)] text-[11px] font-telemetry text-slate-400">
+            Rule: The dashboard consumes data exclusively from the versioned FastAPI contract. Local offline fallback data has been intentionally disabled for integration integrity.
+          </div>
+          <button
+            type="button"
+            onClick={loadInitialData}
+            className="w-full cursor-pointer py-2 px-4 rounded-md bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition-colors"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const activeLoc = eventData?.location || {
+    zone_id: "Z42",
+    zone_name: "Velachery South",
+    latitude: 12.9815,
+    longitude: 80.2180,
+    flood_area_type: "Depression Basin",
   };
 
-  const handleSelectIncident = (incId) => {
-    setSelectedIncidentId(incId);
-    const inc = INCIDENTS.find((i) => i.id === incId);
-    if (inc) {
-      const ev = SAMPLE_EVENTS.find((e) => e.zone === inc.zoneId);
-      if (ev) setSelectedEventId(ev.id);
-    }
-  };
+  const timeline = eventData?.timeline || [];
+  const activeTimelineStep = timeline.length > 0 ? timeline[Math.min(timelineStepIndex, timeline.length - 1)] : null;
+  const currentTheme = priorityThemes[eventData?.priority] || priorityThemes.MEDIUM;
 
   return (
     <main className="min-h-screen bg-[var(--canvas)] text-[var(--text-primary)] flex flex-col justify-between p-3 sm:p-5 lg:p-7">
@@ -326,28 +237,28 @@ export default function DashboardPage() {
         <StatusStrip
           apiConnected={apiConnected}
           eventData={eventData}
-          isRadarOutage={isRadarOutage}
+          isRadarOutage={Boolean(eventData?.radar_outage || isRadarOutage)}
         />
 
-        {/* Focus Incident Selector Navigation */}
+        {/* Focus Incident Selector Navigation (Loaded from GET /api/v1/events) */}
         <nav aria-label="Incident focus selector" className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-[var(--text-secondary)] mr-1">
             Catchment Focus:
           </span>
-          {SAMPLE_EVENTS.map((ev) => {
-            const isSelected = selectedEventId === ev.id;
+          {eventsList.map((ev) => {
+            const isSelected = selectedEventId === ev.event_id;
             return (
               <button
-                key={ev.id}
+                key={ev.event_id}
                 type="button"
-                onClick={() => setSelectedEventId(ev.id)}
+                onClick={() => setSelectedEventId(ev.event_id)}
                 className={`cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md transition-all active:scale-[0.98] ${
                   isSelected
                     ? "bg-sky-950/80 text-white border border-sky-500/70 shadow-sm"
                     : "bg-[var(--card)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--card-elevated)] hover:text-slate-200"
                 }`}
               >
-                <span className="font-semibold">{ev.id}</span> · {ev.name}
+                <span className="font-semibold">{ev.event_id}</span> · {ev.zone_name || ev.zone_id}
               </button>
             );
           })}
@@ -359,42 +270,42 @@ export default function DashboardPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2.5">
                 <span className={`px-2.5 py-0.5 rounded text-xs tracking-wider uppercase ${currentTheme.badge}`}>
-                  {eventData.priority}
+                  {eventData?.priority}
                 </span>
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                   {currentTheme.headline}
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-slate-300">
-                Primary impact zone: <strong className="text-white">{activeZone.name}</strong> ({activeZoneId}) — {activeZone.floodArea} topography
+                Primary impact zone: <strong className="text-white">{activeLoc.zone_name}</strong> ({activeLoc.zone_id}) — {activeLoc.flood_area_type} topography
               </p>
             </div>
 
-            {/* Subdued Telemetry Strip */}
+            {/* Telemetry Strip */}
             <div className="flex flex-wrap items-center gap-3 text-xs pt-2 lg:pt-0 border-t lg:border-t-0 border-[var(--border)]">
               <div className="bg-[var(--canvas)] px-3 py-1.5 rounded border border-[var(--border)]">
-                <div className="text-[var(--text-secondary)]">Confidence</div>
+                <div className="text-[var(--text-secondary)]">Model Confidence</div>
                 <div className="text-sm font-bold font-telemetry text-slate-100 mt-0.5">
-                  {((isRadarOutage ? Math.max(0.45, eventData.confidence - 0.25) : eventData.confidence) * 100).toFixed(0)}%
+                  {((eventData?.confidence ?? 0.8) * 100).toFixed(0)}%
                 </div>
               </div>
               <div className="bg-[var(--canvas)] px-3 py-1.5 rounded border border-[var(--border)]">
-                <div className="text-[var(--text-secondary)]">Lead Horizon</div>
+                <div className="text-[var(--text-secondary)]">Forecast Lead</div>
                 <div className="text-sm font-bold font-telemetry text-slate-100 mt-0.5">
-                  {eventData.rainfall?.lead_minutes || 60} min
+                  {eventData?.rainfall?.lead_minutes || 60} min
                 </div>
               </div>
               <div className="bg-[var(--canvas)] px-3 py-1.5 rounded border border-[var(--border)]">
                 <div className="text-[var(--text-secondary)]">Exposed Census</div>
                 <div className="text-sm font-bold font-telemetry text-rose-400 mt-0.5">
-                  {(eventData.impact?.population_exposed || activeZone.population).toLocaleString()}
+                  {(eventData?.impact?.population_exposed || 0).toLocaleString()}
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Temporal Forecast Scrub Bar (Active across modes) */}
+        {/* Temporal Forecast Scrub Bar */}
         <TimelineBar
           timeline={timeline}
           activeStepIndex={timelineStepIndex}
@@ -403,11 +314,12 @@ export default function DashboardPage() {
 
         {/* Primary Interactive GIS Map */}
         <ZoneMap
-          selectedZoneId={activeZoneId}
+          activeLocation={activeLoc}
+          zones={riskTiles}
           onSelectZone={handleSelectZoneFromMap}
           activeTimelineStep={activeTimelineStep}
-          isRadarOutage={isRadarOutage}
-          activeIncident={activeIncident}
+          isRadarOutage={Boolean(eventData?.radar_outage || isRadarOutage)}
+          responseRoute={eventData?.response_route}
           activeMode={activeMode}
         />
 
@@ -437,7 +349,7 @@ export default function DashboardPage() {
               }`}
             >
               <span>👥</span>
-              <span>Impact & What-If Mode</span>
+              <span>Impact &amp; What-If Mode</span>
             </button>
 
             <button
@@ -450,7 +362,7 @@ export default function DashboardPage() {
               }`}
             >
               <span>🚨</span>
-              <span>Response & Routing Mode</span>
+              <span>Response &amp; Routing Mode</span>
             </button>
           </div>
         </div>
@@ -461,24 +373,22 @@ export default function DashboardPage() {
             <HazardMode
               eventData={eventData}
               activeTimelineStep={activeTimelineStep}
-              isRadarOutage={isRadarOutage}
-              onToggleRadarOutage={() => setIsRadarOutage(!isRadarOutage)}
+              isRadarOutage={Boolean(eventData?.radar_outage || isRadarOutage)}
+              onToggleRadarOutage={handleToggleRadarOutage}
             />
           )}
 
           {activeMode === "impact" && (
             <ImpactMode
               eventData={eventData}
-              activeZone={activeZone}
             />
           )}
 
           {activeMode === "response" && (
             <ResponseMode
               eventData={eventData}
-              activeZone={activeZone}
-              selectedIncidentId={selectedIncidentId}
-              onSelectIncident={handleSelectIncident}
+              availableEvents={eventsList}
+              onSelectEvent={(id) => setSelectedEventId(id)}
               onOpenCapDrawer={() => setIsCapDrawerOpen(true)}
             />
           )}
@@ -489,17 +399,17 @@ export default function DashboardPage() {
           isOpen={isCapDrawerOpen}
           onClose={() => setIsCapDrawerOpen(false)}
           eventData={eventData}
-          activeZone={activeZone}
+          activeLocation={activeLoc}
         />
 
         {/* Operational Footer */}
         <footer className="pt-6 pb-3 border-t border-[var(--border)] text-xs text-[var(--text-secondary)] flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>
-            HydroSurge AI Decision Support • Automated Inundation Modeling & Flash Flood Early Warning System
+            HydroSurge AI Decision Support • Automated Inundation Modeling &amp; Early Warning System
           </p>
           <div className="flex items-center gap-3 font-telemetry">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--safe)]"></span>
-            <span>OASIS CAP v1.2 & FastHydro Engine Validated</span>
+            <span>OASIS CAP v1.2 &amp; FastAPI Contract Verified</span>
           </div>
         </footer>
 

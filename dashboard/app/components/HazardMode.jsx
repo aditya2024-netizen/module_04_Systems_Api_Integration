@@ -20,37 +20,32 @@ export default function HazardMode({
     ? activeTimelineStep.flood_probability
     : inun.flood_probability;
 
-  // Radar outage degradation calculations
-  const effectiveRainConfidence = isRadarOutage
-    ? Math.max(0.45, (rain.confidence || 0.84) - 0.28)
-    : (rain.confidence || 0.84);
-  const effectiveInunConfidence = isRadarOutage
-    ? Math.max(0.42, (inun.confidence || 0.81) - 0.25)
-    : (inun.confidence || 0.81);
-  const effectiveSource = isRadarOutage
-    ? "imd_kalpana_satellite_fallback"
-    : (rain.source || "mock");
+  // Values directly from API contract
+  const isOutageActive = Boolean(eventData.radar_outage || isRadarOutage);
+  const effectiveRainConfidence = rain.confidence ?? 0.84;
+  const effectiveInunConfidence = inun.confidence ?? 0.81;
+  const effectiveSource = eventData.fallback_source || rain.source || "mock";
 
   return (
     <div className="space-y-4">
       {/* Radar Outage Simulation Control Banner */}
       <div className={`p-4 rounded-lg border transition-all ${
-        isRadarOutage
+        isOutageActive
           ? "bg-amber-950/40 border-amber-500/60 shadow-lg shadow-amber-950/20"
           : "bg-[var(--card)] border-[var(--border)]"
       }`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className={`h-2.5 w-2.5 rounded-full ${isRadarOutage ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`}></span>
+              <span className={`h-2.5 w-2.5 rounded-full ${isOutageActive ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`}></span>
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                {isRadarOutage ? "Radar Outage Active — Secondary Satellite Fallback" : "Doppler Weather Radar Telemetry (Primary)"}
+                {isOutageActive ? "Simulated Radar Outage — Degraded Fallback Mode Active" : "Doppler Weather Radar Telemetry (Replay Primary)"}
               </h3>
             </div>
             <p className="text-xs text-[var(--text-secondary)]">
-              {isRadarOutage
-                ? "Simulating X-band / S-band Doppler radar outage. System fell back to INSAT-3D IR & gauge interpolation with broadened uncertainty envelope."
-                : "Continuous high-resolution precipitation nowcasting active with IMD Doppler radar grid."}
+              {isOutageActive
+                ? "Simulating X-band / S-band radar telemetry disruption via API query. Degraded fallback active with increased uncertainty."
+                : "Continuous high-resolution precipitation nowcasting active with replay Doppler radar telemetry."}
             </p>
           </div>
 
@@ -58,20 +53,20 @@ export default function HazardMode({
             type="button"
             onClick={onToggleRadarOutage}
             className={`cursor-pointer px-3.5 py-2 text-xs font-semibold rounded-md border transition-all shrink-0 ${
-              isRadarOutage
+              isOutageActive
                 ? "bg-amber-500 text-black border-amber-400 hover:bg-amber-400 font-bold"
                 : "bg-[var(--card-elevated)] border-[var(--border)] text-[var(--text-primary)] hover:border-slate-500 hover:bg-[#141e33]"
             }`}
           >
-            {isRadarOutage ? "Restore Radar Telemetry" : "⚡ Simulate Radar Outage"}
+            {isOutageActive ? "Restore Nominal Radar Telemetry" : "⚡ Simulate Radar Outage"}
           </button>
         </div>
 
-        {isRadarOutage && (
+        {isOutageActive && (
           <div className="mt-3 p-2.5 rounded bg-amber-900/30 border border-amber-600/40 text-xs text-amber-200 flex items-center gap-2">
             <span>⚠️</span>
             <span>
-              <strong>Degraded Telemetry Mode:</strong> Rainfall confidence reduced to {(effectiveRainConfidence * 100).toFixed(0)}%. Flood probability confidence reduced to {(effectiveInunConfidence * 100).toFixed(0)}%. Inundation margin widened by ±400m.
+              <strong>Degraded Fallback Telemetry (API-Verified):</strong> Sensor source redirected to <code className="font-mono">{effectiveSource}</code>. Rainfall confidence: {(effectiveRainConfidence * 100).toFixed(0)}%. Flood probability confidence: {(effectiveInunConfidence * 100).toFixed(0)}%.
             </span>
           </div>
         )}
@@ -91,7 +86,7 @@ export default function HazardMode({
                 </h4>
               </div>
               <span className={`text-[11px] font-telemetry px-2 py-0.5 rounded ${
-                isRadarOutage ? "bg-amber-950 border border-amber-600 text-amber-300" : "bg-[var(--card-elevated)] text-slate-300 border border-[var(--border)]"
+                isOutageActive ? "bg-amber-950 border border-amber-600 text-amber-300" : "bg-[var(--card-elevated)] text-slate-300 border border-[var(--border)]"
               }`}>
                 Conf: {(effectiveRainConfidence * 100).toFixed(0)}%
               </span>
@@ -147,7 +142,7 @@ export default function HazardMode({
                 </h4>
               </div>
               <span className={`text-[11px] font-telemetry px-2 py-0.5 rounded ${
-                isRadarOutage ? "bg-amber-950 border border-amber-600 text-amber-300" : "bg-[var(--card-elevated)] text-slate-300 border border-[var(--border)]"
+                isOutageActive ? "bg-amber-950 border border-amber-600 text-amber-300" : "bg-[var(--card-elevated)] text-slate-300 border border-[var(--border)]"
               }`}>
                 Conf: {(effectiveInunConfidence * 100).toFixed(0)}%
               </span>
@@ -172,7 +167,7 @@ export default function HazardMode({
             <div className="mt-4 space-y-2 text-xs font-telemetry text-[var(--text-secondary)]">
               <div className="flex justify-between py-1 border-b border-[var(--border)]/60">
                 <span>Hydraulic model engine:</span>
-                <span className="text-[var(--text-primary)] font-semibold">2D Overland Shallow-Water</span>
+                <span className="text-[var(--text-primary)] font-semibold">2D Overland Shallow-Water (Replay)</span>
               </div>
               <div className="flex justify-between py-1 border-b border-[var(--border)]/60">
                 <span>Model state artifact:</span>
