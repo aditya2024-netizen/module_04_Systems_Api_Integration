@@ -91,8 +91,8 @@ export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-      <div className="w-full max-w-3xl rounded-xl panel-technical corner-accents shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-slate-700/80">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div className="w-full max-w-3xl rounded-xl panel-technical corner-accents shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-[var(--border)] bg-[var(--card)]">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card-elevated)]">
@@ -101,7 +101,7 @@ export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }
             <div>
               <div className="flex items-center gap-2">
                 <span className="label-tactical text-[11px]">CAP v1.2 / SACHET EMERGENCY ALERT GENERATOR</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950/60 border border-rose-500/40 text-rose-300 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-50 border border-rose-300 text-rose-700 font-bold">
                   OASIS STANDARD
                 </span>
               </div>
@@ -113,14 +113,14 @@ export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-mono text-[var(--text-secondary)] hover:text-white px-3 py-1.5 rounded border border-[var(--border)] hover:bg-[var(--card)] transition-colors cursor-pointer"
+            className="text-xs font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 rounded border border-[var(--border)] hover:bg-slate-200 transition-colors cursor-pointer"
           >
             ✕ CLOSE
           </button>
         </div>
 
         {/* XML Viewer Body */}
-        <div className="p-4 overflow-y-auto font-telemetry text-xs bg-[var(--canvas)] text-slate-300 leading-relaxed flex-1 border-y border-[var(--border)]">
+        <div className="p-4 overflow-y-auto font-telemetry text-xs bg-slate-900 text-slate-100 leading-relaxed flex-1 border-y border-[var(--border)]">
           <pre className="whitespace-pre-wrap select-all font-mono text-[11px]">
             {xmlContent}
           </pre>
@@ -137,7 +137,7 @@ export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }
             <button
               type="button"
               onClick={handleCopy}
-              className="cursor-pointer px-3.5 py-1.5 text-xs font-medium rounded-md panel-elevated border border-[var(--border)] text-[var(--text-primary)] hover:border-slate-400 transition-colors font-mono"
+              className="cursor-pointer px-3.5 py-1.5 text-xs font-medium rounded-md bg-white border border-[var(--border)] text-[var(--text-primary)] hover:border-slate-400 transition-colors font-mono shadow-2xs"
             >
               {copied ? "✓ COPIED TO CLIPBOARD" : "COPY XML PAYLOAD"}
             </button>
@@ -145,7 +145,7 @@ export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }
             <button
               type="button"
               onClick={handleDownload}
-              className="cursor-pointer px-3.5 py-1.5 text-xs font-bold rounded-md bg-[var(--critical)] text-white hover:brightness-110 shadow-sm transition-all font-mono flex items-center gap-1.5"
+              className="cursor-pointer px-3.5 py-1.5 text-xs font-bold rounded-md bg-[var(--critical)] text-white hover:brightness-110 shadow-xs transition-all font-mono flex items-center gap-1.5"
             >
               <span>⬇</span>
               <span>DOWNLOAD CAP XML (.xml)</span>

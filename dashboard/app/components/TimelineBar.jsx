@@ -44,16 +44,16 @@ export default function TimelineBar({
   }, [isPlaying, steps.length, onStepChange]);
 
   return (
-    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col gap-3 shadow-sm">
+    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] p-4 flex flex-col gap-3 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm bg-sky-400"></span>
-            <span className="text-xs sm:text-sm font-bold text-white tracking-wide uppercase font-telemetry">
+            <span className="h-2 w-2 rounded-sm bg-sky-600"></span>
+            <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)] tracking-wide uppercase font-telemetry">
               Temporal Forecast Sequence
             </span>
           </div>
-          <span className="text-[11px] px-2.5 py-0.5 rounded bg-sky-950/80 border border-sky-500/60 font-telemetry font-bold text-sky-300">
+          <span className="text-[11px] px-2.5 py-0.5 rounded bg-sky-50 border border-sky-300 font-telemetry font-bold text-sky-800">
             {currentStep.step_label || `+${currentStep.lead_minutes || 0} min`}
           </span>
         </div>
@@ -64,11 +64,11 @@ export default function TimelineBar({
             onClick={() => setIsPlaying(!isPlaying)}
             className={`cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-md border transition-all flex items-center gap-1.5 font-telemetry ${
               isPlaying
-                ? "bg-amber-950/80 border-amber-500 text-amber-300 shadow-sm shadow-amber-950/40"
-                : "bg-[var(--card-elevated)] border-[var(--border)] text-slate-200 hover:border-slate-500 hover:text-white"
+                ? "bg-amber-50 border-amber-400 text-amber-900 shadow-xs"
+                : "bg-[var(--card-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:border-slate-400 hover:text-[var(--text-primary)]"
             }`}
           >
-            <span className={isPlaying ? "animate-pulse text-amber-400" : "text-sky-400"}>
+            <span className={isPlaying ? "animate-pulse text-amber-700 font-bold" : "text-sky-700 font-bold"}>
               {isPlaying ? "⏸ PAUSE" : "▶ AUTO-PLAY"}
             </span>
           </button>
@@ -79,7 +79,7 @@ export default function TimelineBar({
               setIsPlaying(false);
               if (onStepChange) onStepChange(0);
             }}
-            className="cursor-pointer px-2.5 py-1.5 text-xs font-telemetry rounded-md border border-[var(--border)] bg-[var(--card-elevated)] text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+            className="cursor-pointer px-2.5 py-1.5 text-xs font-telemetry rounded-md border border-[var(--border)] bg-[var(--card-elevated)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-slate-400 transition-colors"
           >
             RESET
           </button>
@@ -92,13 +92,13 @@ export default function TimelineBar({
           const isSelected = idx === currentIndex;
           const prob = st.flood_probability || 0;
           let dotColor = "bg-[var(--safe)]";
-          let badgeBorder = "border-emerald-500/30 text-emerald-400";
+          let badgeBorder = "border-emerald-300 text-emerald-700 bg-emerald-50/80";
           if (prob >= 0.7) {
             dotColor = "bg-[var(--critical)]";
-            badgeBorder = "border-rose-500/30 text-rose-300";
+            badgeBorder = "border-rose-300 text-rose-700 bg-rose-50/80";
           } else if (prob >= 0.4) {
             dotColor = "bg-[var(--warning)]";
-            badgeBorder = "border-amber-500/30 text-amber-300";
+            badgeBorder = "border-amber-300 text-amber-700 bg-amber-50/80";
           }
 
           return (
@@ -111,28 +111,28 @@ export default function TimelineBar({
               }}
               className={`cursor-pointer p-2.5 rounded-lg flex flex-col items-center justify-between border transition-all text-center ${
                 isSelected
-                  ? "bg-sky-950/80 border-sky-400 text-white shadow-md shadow-sky-950/40 ring-1 ring-sky-500/50"
-                  : "bg-[var(--card-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:text-white hover:border-slate-600"
+                  ? "bg-sky-50 border-sky-400 text-sky-950 shadow-xs ring-1 ring-sky-500/30"
+                  : "bg-[var(--card-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-slate-300"
               }`}
             >
-              <div className="flex items-center gap-1.5 w-full justify-between pb-1 border-b border-[var(--border)]/50">
+              <div className="flex items-center gap-1.5 w-full justify-between pb-1 border-b border-[var(--border)]">
                 <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`}></span>
                 <span className="font-telemetry font-bold text-xs tracking-wider">
                   {st.step_label || `+${st.lead_minutes}m`}
                 </span>
-                <span className={`text-[9px] font-telemetry px-1 rounded ${badgeBorder}`}>
+                <span className={`text-[9px] font-telemetry px-1 rounded border font-semibold ${badgeBorder}`}>
                   {(prob * 100).toFixed(0)}%
                 </span>
               </div>
               <div className="my-1 text-center w-full">
-                <div className="text-[11px] font-bold text-slate-100 font-telemetry">
+                <div className="text-[11px] font-bold text-[var(--text-primary)] font-telemetry">
                   {st.rainfall_mm_hr !== undefined ? `${st.rainfall_mm_hr} mm/hr` : "—"}
                 </div>
-                <div className="text-[10px] font-medium text-sky-300 font-telemetry mt-0.5">
+                <div className="text-[10px] font-medium text-sky-700 font-telemetry mt-0.5">
                   Depth: {st.depth_band || "—"}
                 </div>
               </div>
-              <span className="text-[9px] text-slate-400 font-telemetry uppercase">
+              <span className="text-[9px] text-[var(--text-muted)] font-telemetry uppercase">
                 {st.rainfall_accumulation_mm ? `${st.rainfall_accumulation_mm}mm accum` : "Step"}
               </span>
             </button>
@@ -141,22 +141,22 @@ export default function TimelineBar({
       </div>
 
       {/* Scrub Details Strip */}
-      <div className="flex flex-wrap items-center justify-between text-xs text-[var(--text-secondary)] pt-2 border-t border-[var(--border)] font-telemetry gap-2 bg-[var(--canvas)] p-2.5 rounded-md border border-[var(--border)]/70">
+      <div className="flex flex-wrap items-center justify-between text-xs text-[var(--text-secondary)] pt-2 border-t border-[var(--border)] font-telemetry gap-2 bg-[var(--canvas)] p-2.5 rounded-md border border-[var(--border)]">
         <span className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] uppercase">Horizon:</span>
-          <strong className="text-white text-xs font-bold">+{currentStep.lead_minutes || 0} min</strong>
+          <span className="text-[var(--text-muted)] text-[11px] uppercase">Horizon:</span>
+          <strong className="text-[var(--text-primary)] text-xs font-bold">+{currentStep.lead_minutes || 0} min</strong>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] uppercase">Precipitation:</span>
-          <strong className="text-sky-300 text-xs font-bold">{currentStep.rainfall_mm_hr || 0} mm/hr</strong>
+          <span className="text-[var(--text-muted)] text-[11px] uppercase">Precipitation:</span>
+          <strong className="text-sky-700 text-xs font-bold">{currentStep.rainfall_mm_hr || 0} mm/hr</strong>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] uppercase">Projected Depth:</span>
-          <strong className="text-rose-400 text-xs font-bold">{currentStep.depth_band || "nominal"}</strong>
+          <span className="text-[var(--text-muted)] text-[11px] uppercase">Projected Depth:</span>
+          <strong className="text-rose-600 text-xs font-bold">{currentStep.depth_band || "nominal"}</strong>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] uppercase">Inundation Prob:</span>
-          <strong className="text-amber-300 text-xs font-bold">{((currentStep.flood_probability || 0) * 100).toFixed(0)}%</strong>
+          <span className="text-[var(--text-muted)] text-[11px] uppercase">Inundation Prob:</span>
+          <strong className="text-amber-700 text-xs font-bold">{((currentStep.flood_probability || 0) * 100).toFixed(0)}%</strong>
         </span>
       </div>
     </div>

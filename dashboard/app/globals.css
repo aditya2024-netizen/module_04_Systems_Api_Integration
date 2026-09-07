@@ -6,24 +6,31 @@
    Strict OKLCH Palette (Non-negotiable)
    ========================================================================== */
 :root {
-  --canvas: oklch(14% 0.01 230);
-  --card: oklch(18% 0.015 230);
-  --card-elevated: oklch(21% 0.02 230);
-  --card-hover: oklch(23% 0.022 230);
-  --critical: oklch(62% 0.22 25);
-  --critical-bg: oklch(20% 0.05 25);
-  --critical-border: oklch(40% 0.12 25);
-  --warning: oklch(69% 0.19 50);
-  --warning-bg: oklch(22% 0.05 50);
-  --warning-border: oklch(45% 0.10 50);
-  --safe: oklch(68% 0.16 142);
-  --safe-bg: oklch(20% 0.04 142);
-  --safe-border: oklch(42% 0.08 142);
-  --text-primary: oklch(96% 0.01 230);
-  --text-secondary: oklch(74% 0.02 230);
-  --text-muted: oklch(60% 0.02 230);
-  --border: oklch(22% 0.015 230);
-  --accent-cyan: oklch(72% 0.12 215);
+  /* Clean Crisp Light White Palette */
+  --canvas: #f8fafc;
+  --card: #ffffff;
+  --card-elevated: #f1f5f9;
+  --card-hover: #e2e8f0;
+
+  /* High-Contrast Status Accents */
+  --critical: #dc2626;
+  --critical-bg: #fef2f2;
+  --critical-border: #fecaca;
+
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  --safe: #16a34a;
+  --safe-bg: #f0fdf4;
+  --safe-border: #bbf7d0;
+
+  /* Typography & Structure */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --accent-cyan: #0284c7;
 
   --background: var(--canvas);
   --foreground: var(--text-primary);
@@ -49,26 +56,27 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   outline-offset: 2px;
 }
 
-/* Leaflet Container styling for dark command center */
+/* Leaflet Container styling for light command center */
 .leaflet-container {
-  background: var(--canvas) !important;
+  background: #e2e8f0 !important;
   font-family: inherit;
 }
 
+/* Crisp Clean Light GIS Cartography: clear road networks, water bodies, and labels */
 .leaflet-tile {
-  filter: brightness(0.60) invert(1) contrast(3) hue-rotate(200deg) saturate(0.25) brightness(0.72);
+  filter: saturate(0.95) contrast(1.04) brightness(1.01);
 }
 
 .leaflet-popup-content-wrapper {
-  background: var(--card) !important;
-  color: var(--text-primary) !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
   border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
 }
 
 .leaflet-popup-tip {
-  background: var(--card) !important;
+  background: #ffffff !important;
 }
 
 /* Custom Scrollbar */
@@ -80,11 +88,11 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   background: var(--canvas);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: #cbd5e1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: #94a3b8;
 }
 
 /* Command Center Panel Utility Classes */
@@ -92,16 +100,46 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
   position: relative;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.panel-technical:hover {
-  border-color: oklch(30% 0.02 230);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .panel-elevated {
   background-color: var(--card-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+/* Genuinely Interactive Card Micro-Interactions (150-250ms) */
+.card-interactive {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+}
+.card-interactive:hover {
+  transform: translateY(-1.5px);
+  border-color: #94a3b8;
+  box-shadow: 0 6px 18px -4px rgba(15, 23, 42, 0.1);
+}
+.card-interactive:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+/* Specific Card Hierarchy Treatments */
+.card-critical-risk {
+  background: linear-gradient(135deg, var(--critical-bg) 0%, #ffffff 100%);
+  border: 1px solid var(--critical-border);
+  box-shadow: 0 4px 16px -2px rgba(220, 38, 38, 0.1);
+}
+
+.card-recommendation {
+  background: linear-gradient(135deg, var(--safe-bg) 0%, #ffffff 100%);
+  border: 1px solid var(--safe-border);
+  box-shadow: 0 4px 16px -2px rgba(22, 163, 74, 0.08);
+}
+
+.card-telemetry {
+  background: var(--canvas);
   border: 1px solid var(--border);
   border-radius: 6px;
 }
@@ -118,7 +156,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   height: 6px;
   border-color: var(--accent-cyan);
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.65;
 }
 .corner-accents::before {
   top: 0;
