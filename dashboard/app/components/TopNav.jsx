@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { IconAlert, IconRefresh, IconTarget } from "./Icons";
+import {
+  Clock,
+  ChevronDown,
+  RefreshCw,
+  AlertTriangle,
+  Zap,
+  Radio,
+} from "lucide-react";
 
 export default function TopNav({
   eventsList = [],
@@ -18,114 +25,149 @@ export default function TopNav({
 
   const activeEvent = eventsList.find((e) => e.event_id === selectedEventId) || {
     event_id: selectedEventId || "E001",
-    zone_name: eventData?.location?.zone_name || "Velachery South",
+    zone_name: eventData?.location?.zone_name || "Adyar River Basin",
     zone_id: eventData?.location?.zone_id || "Z42",
     priority: eventData?.priority || "CRITICAL",
   };
 
-  const priorityColors = {
-    CRITICAL: "bg-rose-50 border-rose-300 text-rose-700",
-    HIGH: "bg-amber-50 border-amber-300 text-amber-800",
-    MEDIUM: "bg-yellow-50 border-yellow-300 text-yellow-800",
-    LOW: "bg-emerald-50 border-emerald-300 text-emerald-800",
-  };
+  // Format valid times deterministically for SSR/Hydration safety
+  let updatedTime = "09:42 UTC";
+  let validThroughTime = "11:42 UTC";
+
+  try {
+    if (eventData?.rainfall?.valid_time) {
+      const d = new Date(eventData.rainfall.valid_time);
+      if (!isNaN(d.getTime())) {
+        const hh = String(d.getUTCHours()).padStart(2, "0");
+        const mm = String(d.getUTCMinutes()).padStart(2, "0");
+        updatedTime = `${hh}:${mm} UTC`;
+        const lead = eventData?.rainfall?.lead_minutes || 120;
+        const dEnd = new Date(d.getTime() + lead * 60000);
+        const hhEnd = String(dEnd.getUTCHours()).padStart(2, "0");
+        const mmEnd = String(dEnd.getUTCMinutes()).padStart(2, "0");
+        validThroughTime = `${hhEnd}:${mmEnd} UTC`;
+      }
+    }
+  } catch (err) {
+    // fallback to default
+  }
 
   return (
-    <header className="bg-[var(--card)] border-b border-[var(--border)] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 shadow-2xs">
-      {/* Left: Sector & Active Event Switcher */}
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Sector Tag */}
-        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-[var(--canvas)] border border-[var(--border)] text-xs font-telemetry">
-          <span className="h-2 w-2 rounded-full bg-sky-600"></span>
-          <span className="font-bold text-[var(--text-primary)]">CHENNAI SECTOR</span>
-          <span className="text-[var(--text-muted)]">|</span>
-          <span className="text-[var(--text-secondary)]">ADYAR BASIN (PILOT)</span>
-        </div>
+    <header className="bg-card border-b border-border h-16 flex items-center justify-between px-6 shrink-0 sticky top-0 z-20 shadow-xs">
+      {/* Left: Monitoring Area / Active Focus */}
+      <div className="flex items-center gap-4">
+        <div className="flex flex-col">
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Monitoring Area
+          </span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 text-sm font-semibold text-card-foreground hover:text-primary transition-colors cursor-pointer"
+              aria-expanded={dropdownOpen}
+            >
+              <span>{activeEvent.zone_name || "Adyar River Basin"}</span>
+              <span className="text-xs px-1.5 py-0.5 rounded bg-critical-light text-critical font-bold uppercase">
+                {activeEvent.event_id}
+              </span>
+              <ChevronDown size={14} className="text-muted-foreground" />
+            </button>
 
-        {/* Active Event Dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--card-elevated)] hover:bg-slate-100 hover:border-slate-300 text-xs transition-all cursor-pointer shadow-2xs"
-            aria-expanded={dropdownOpen}
-            aria-haspopup="listbox"
-          >
-            <span className="text-[var(--text-muted)] font-telemetry uppercase text-[10px] font-bold">Focus:</span>
-            <span className="font-telemetry font-bold text-sky-800">{activeEvent.event_id}</span>
-            <span className="font-semibold text-[var(--text-primary)] max-w-[140px] sm:max-w-[200px] truncate">
-              {activeEvent.zone_name || activeEvent.zone_id}
-            </span>
-            <span className={`text-[9px] font-telemetry font-bold px-1.5 py-0.5 rounded border ${priorityColors[activeEvent.priority] || priorityColors.MEDIUM}`}>
-              {activeEvent.priority}
-            </span>
-            <span className="text-[10px] text-[var(--text-muted)]">▼</span>
-          </button>
-
-          {/* Event Picker Dropdown Menu */}
-          {dropdownOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setDropdownOpen(false)}
-              ></div>
-              <div className="absolute left-0 mt-1.5 w-72 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-xl py-1.5 z-50 text-xs">
-                <div className="px-3 py-1 text-[10px] font-bold font-telemetry uppercase text-[var(--text-muted)] border-b border-[var(--border)]">
-                  Select Catchment Incident ({eventsList.length} Available)
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {eventsList.map((ev) => {
-                    const isSelected = ev.event_id === selectedEventId;
-                    return (
-                      <button
-                        key={ev.event_id}
-                        type="button"
-                        onClick={() => {
-                          onSelectEvent(ev.event_id);
-                          setDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? "bg-sky-50 text-sky-950 font-bold border-l-2 border-sky-600"
-                            : "hover:bg-[var(--card-elevated)] text-[var(--text-secondary)]"
-                        }`}
-                      >
-                        <div className="truncate">
-                          <div className="flex items-center gap-2">
-                            <span className="font-telemetry text-sky-700 font-bold">{ev.event_id}</span>
-                            <span className="text-[var(--text-primary)] truncate">{ev.zone_name || ev.zone_id}</span>
+            {dropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setDropdownOpen(false)}
+                />
+                <div className="absolute left-0 mt-2 w-72 bg-card border border-border rounded-xl shadow-xl py-2 z-50 text-xs">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
+                    Select Monitoring Basin ({eventsList.length} Available)
+                  </div>
+                  <div className="max-h-60 overflow-y-auto p-1">
+                    {eventsList.map((ev) => {
+                      const isSelected = ev.event_id === selectedEventId;
+                      return (
+                        <button
+                          key={ev.event_id}
+                          type="button"
+                          onClick={() => {
+                            onSelectEvent(ev.event_id);
+                            setDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-primary/10 text-primary font-bold"
+                              : "hover:bg-muted text-secondary-foreground"
+                          }`}
+                        >
+                          <div>
+                            <div className="font-semibold text-card-foreground">
+                              {ev.zone_name || ev.zone_id}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground">
+                              Incident ID: {ev.event_id} • {ev.zone_id}
+                            </div>
                           </div>
-                          <div className="text-[10px] text-[var(--text-muted)] font-telemetry">Zone ID: {ev.zone_id}</div>
-                        </div>
-                        <span className={`text-[9px] font-telemetry font-bold px-1.5 py-0.5 rounded border shrink-0 ${priorityColors[ev.priority] || priorityColors.MEDIUM}`}>
-                          {ev.priority}
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <span
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                              ev.priority === "CRITICAL"
+                                ? "bg-critical-light text-critical"
+                                : "bg-warning-light text-warning"
+                            }`}
+                          >
+                            {ev.priority || "NORMAL"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Right: Operational Controls & Badges */}
-      <div className="flex flex-wrap items-center gap-2.5">
+      {/* Right: Telemetry Time, Radar Toggle & CAP CTA */}
+      <div className="flex items-center gap-4 md:gap-6">
+        {/* Last Updated */}
+        <div className="hidden sm:flex items-center gap-2 text-xs md:text-sm text-secondary-foreground">
+          <Clock size={15} className="text-muted-foreground" />
+          <span>
+            Last Updated:{" "}
+            <strong className="text-card-foreground" suppressHydrationWarning>{updatedTime}</strong>
+          </span>
+        </div>
+
+        <div className="hidden sm:block h-6 w-px bg-border"></div>
+
+        {/* Valid Through */}
+        <div className="hidden sm:flex items-center gap-2 text-xs md:text-sm text-secondary-foreground">
+          <span className="flex h-2 w-2 rounded-full bg-safe"></span>
+          <span>
+            Valid Through:{" "}
+            <strong className="text-card-foreground" suppressHydrationWarning>{validThroughTime}</strong>
+          </span>
+        </div>
+
         {/* Radar Outage Toggle */}
         <button
           type="button"
           onClick={onToggleRadarOutage}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
             isRadarOutage
-              ? "bg-amber-500 text-slate-950 border-amber-400 font-bold hover:bg-amber-400 shadow-xs"
-              : "bg-[var(--card-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-slate-300"
+              ? "bg-amber-500 text-slate-950 border-amber-400 font-bold shadow-sm"
+              : "bg-muted border-border text-secondary-foreground hover:bg-secondary/60 hover:text-card-foreground"
           }`}
-          title={isRadarOutage ? "Restore Doppler Radar Nowcast stream" : "Simulate Doppler Radar Outage & fallback to Satellite"}
+          title={isRadarOutage ? "Restore Doppler Radar Stream" : "Simulate Radar Outage & Fallback to Satellite"}
         >
-          <span>{isRadarOutage ? "⚠️" : "⚡"}</span>
-          <span className="font-telemetry text-[11px]">
+          <Radio size={14} className={isRadarOutage ? "animate-pulse" : ""} />
+          <span className="hidden md:inline">
             {isRadarOutage ? "RADAR OUTAGE ACTIVE" : "Simulate Radar Outage"}
+          </span>
+          <span className="md:hidden">
+            {isRadarOutage ? "OUTAGE" : "RADAR"}
           </span>
         </button>
 
@@ -134,23 +176,23 @@ export default function TopNav({
           <button
             type="button"
             onClick={onRefresh}
-            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--card-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-slate-300 transition-colors cursor-pointer"
+            className="p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-card-foreground hover:bg-muted transition-colors cursor-pointer"
             title="Refresh API Data"
             aria-label="Refresh API Data"
           >
-            <IconRefresh className="w-3.5 h-3.5" />
+            <RefreshCw size={14} />
           </button>
         )}
 
-        {/* Generate CAP / SACHET Payload CTA */}
+        {/* Issue CAP Alert CTA */}
         <button
           type="button"
           onClick={onOpenCapDrawer}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[var(--critical)] text-white hover:brightness-110 text-xs font-bold font-telemetry transition-all cursor-pointer shadow-xs border border-rose-500/40 tracking-wide"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-critical hover:bg-red-600 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
         >
-          <span>🚨</span>
-          <span className="hidden sm:inline">GENERATE CAP / SACHET</span>
-          <span className="sm:hidden">CAP ALERT</span>
+          <AlertTriangle size={14} />
+          <span className="hidden sm:inline">Issue CAP Alert</span>
+          <span className="sm:hidden">Alert</span>
         </button>
       </div>
     </header>

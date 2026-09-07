@@ -11,6 +11,7 @@ export default function ZoneMap({
   responseRoute,
   activeMode,
   eventData,
+  compact = false,
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -70,9 +71,10 @@ export default function ZoneMap({
         scrollWheelZoom: false,
       });
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-        maxZoom: 18,
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 19,
+        subdomains: "abcd",
       }).addTo(map);
 
       mapInstanceRef.current = map;
@@ -113,12 +115,31 @@ export default function ZoneMap({
 
         zoneMarkersRef.current[zId] = marker;
       });
+
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 250);
     }
 
     initMap();
 
+    let resizeObserver = null;
+    if (typeof window !== "undefined" && window.ResizeObserver && mapContainerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      });
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
     return () => {
       isMounted = false;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -308,6 +329,65 @@ export default function ZoneMap({
         <p className="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
           Centroid coordinates are not available for this event. In accordance with data truthfulness principles, coordinates are not fabricated.
         </p>
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div className="relative h-full w-full min-h-[360px] rounded-xl overflow-hidden border border-border shadow-sm">
+        <div ref={mapContainerRef} className="h-full w-full z-0 min-h-[360px]" />
+
+        {/* Map Layer Controls (Top-Right) */}
+        <div className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 bg-white/95 backdrop-blur-sm p-1 rounded-lg border border-border shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowRiskLayer((prev) => !prev)}
+            className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors cursor-pointer ${
+              showRiskLayer ? "bg-primary text-white" : "text-secondary-foreground hover:bg-secondary/60"
+            }`}
+          >
+            Risk
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowCentroids((prev) => !prev)}
+            className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors cursor-pointer ${
+              showCentroids ? "bg-primary text-white" : "text-secondary-foreground hover:bg-secondary/60"
+            }`}
+          >
+            Centroids
+          </button>
+          <button
+            type="button"
+            onClick={handleRecenter}
+            className="px-2 py-1 text-secondary-foreground hover:text-card-foreground text-xs font-bold rounded transition-colors cursor-pointer"
+            title={`Recenter on ${currentZoneName}`}
+          >
+            ⌖
+          </button>
+        </div>
+
+        {/* Floating Legend (Bottom-Right) */}
+        <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm p-2.5 rounded-lg border border-border shadow-md text-xs font-medium z-[1000] space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-critical opacity-90"></span>
+            <span className="text-secondary-foreground text-[11px] font-semibold">High Risk</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-warning opacity-90"></span>
+            <span className="text-secondary-foreground text-[11px] font-semibold">Moderate Risk</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-safe opacity-90"></span>
+            <span className="text-secondary-foreground text-[11px] font-semibold">Low Risk</span>
+          </div>
+        </div>
+
+        {/* Catchment identifier (Bottom-Left) */}
+        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md border border-border text-[11px] font-semibold text-card-foreground z-[1000] shadow-sm">
+          {currentZoneName} ({currentZoneId})
+        </div>
       </div>
     );
   }

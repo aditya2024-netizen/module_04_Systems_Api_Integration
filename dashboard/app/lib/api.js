@@ -62,5 +62,33 @@ export async function fetchRiskTiles(zoneId = null) {
   return res.json();
 }
 
+export async function fetchRainfall({ eventId = null, zoneId = null, simulateRadarOutage = false } = {}) {
+  const params = new URLSearchParams();
+  if (eventId) params.append("event_id", eventId);
+  if (zoneId) params.append("zone_id", zoneId);
+  if (simulateRadarOutage) params.append("simulate_radar_outage", "true");
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const res = await fetchWithTimeout(`${API_BASE_URL}/rainfall${query}`);
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "");
+    throw new Error(`Fetch rainfall failed (${res.status}): ${errorBody}`);
+  }
+  return res.json();
+}
+
+export async function fetchInundation({ eventId = null, zoneId = null, simulateRadarOutage = false } = {}) {
+  const params = new URLSearchParams();
+  if (eventId) params.append("event_id", eventId);
+  if (zoneId) params.append("zone_id", zoneId);
+  if (simulateRadarOutage) params.append("simulate_radar_outage", "true");
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const res = await fetchWithTimeout(`${API_BASE_URL}/inundation${query}`);
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "");
+    throw new Error(`Fetch inundation failed (${res.status}): ${errorBody}`);
+  }
+  return res.json();
+}
+
 export { API_BASE_URL };
 

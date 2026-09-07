@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }) {
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !eventData) return null;
 
@@ -91,8 +100,14 @@ export default function CapDrawer({ isOpen, onClose, eventData, activeLocation }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-3xl rounded-xl panel-technical corner-accents shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-[var(--border)] bg-[var(--card)]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-3xl rounded-xl panel-technical corner-accents shadow-2xl flex flex-col max-h-[85vh] overflow-hidden border border-border bg-card"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card-elevated)]">

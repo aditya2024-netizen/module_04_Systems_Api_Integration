@@ -1,0 +1,38 @@
+{
+  "fonts": [
+    {
+      "family": "Poppins",
+      "style": "SemiBold",
+      "fontId": "Poppins-SemiBold_6",
+      "source": "GOOGLE"
+    },
+    {
+      "family": "SF Pro Display",
+      "style": "Regular"
+    },
+    {
+      "family": "SF Pro Display",
+      "style": "Semibold"
+    },
+    {
+      "family": "SF Pro Display",
+      "style": "Medium"
+    },
+    {
+      "family": "SF Pro Display",
+      "style": "Bold"
+    },
+    {
+      "family": "SF Pro Display",
+      "style": "Light"
+    },
+    {
+      "family": "SF UI Display",
+      "style": "Medium"
+    },
+    {
+      "family": "SF UI Display",
+      "style": "Light"
+    }
+  ]
+}

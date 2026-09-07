@@ -1,0 +1,10 @@
+{
+  "description": "Monitor heavy rainfall and urban flood risks with real-time forecasts, spatial risk assessments, and actionable response recommendations for effective disaster management.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

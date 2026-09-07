@@ -34,5 +34,6 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+*.zip
 .DS_Store
 Thumbs.db
